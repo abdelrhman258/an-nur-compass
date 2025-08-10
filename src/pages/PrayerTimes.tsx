@@ -1,26 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, MapPin, Settings, Volume2 } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Settings, Volume2, Bell, BellOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
 import { audioService } from '@/services/audioService';
 import { storageService } from '@/services/storageService';
+import { notificationService } from '@/services/notificationService';
+import { toast } from 'sonner';
 
 const PrayerTimes = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [location, setLocation] = useState(language === 'ar' ? "جارٍ تحديد الموقع..." : "Getting location...");
+  const [location, setLocation] = useState("جارٍ تحديد الموقع...");
   const [selectedAdhan, setSelectedAdhan] = useState("makkah");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   
   useEffect(() => {
-    // Load saved adhan preference
+    // Load saved settings
     const settings = storageService.getAppSettings();
     setSelectedAdhan(settings.preferredAdhan);
+    setNotificationsEnabled(settings.adhanNotificationsEnabled);
   }, []);
 
   const handleAdhanChange = (value: string) => {
@@ -30,6 +35,18 @@ const PrayerTimes = () => {
 
   const playAdhanPreview = () => {
     audioService.playAdhan(selectedAdhan);
+  };
+
+  const toggleNotifications = () => {
+    if (notificationsEnabled) {
+      notificationService.disableNotifications();
+      setNotificationsEnabled(false);
+      toast.success(t('notificationsDisabled'));
+    } else {
+      notificationService.enableNotifications();
+      setNotificationsEnabled(true);
+      toast.success(t('notificationsEnabled'));
+    }
   };
 
   // Prayer times data with Arabic and English names
@@ -83,15 +100,15 @@ const PrayerTimes = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 60000); // Update every minute for real-time display
 
     // Simulate location detection
     setTimeout(() => {
-      setLocation(language === 'ar' ? "الرياض, المملكة العربية السعودية" : "Manhattan, New York, NY");
+      setLocation("الرياض, المملكة العربية السعودية");
     }, 2000);
 
     return () => clearInterval(timer);
-  }, [language]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -208,7 +225,29 @@ const PrayerTimes = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Notification Toggle */}
+                <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {notificationsEnabled ? (
+                      <Bell className="w-5 h-5 text-primary" />
+                    ) : (
+                      <BellOff className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className="font-medium">{t('adhanNotifications')}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {notificationsEnabled ? t('notificationsEnabled') : t('notificationsDisabled')}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={notificationsEnabled}
+                    onCheckedChange={toggleNotifications}
+                  />
+                </div>
+
+                {/* Adhan Sound Selection */}
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
                     {t('selectAdhan')}
@@ -229,11 +268,11 @@ const PrayerTimes = () => {
                 
                 <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg">
                   <span className="text-sm text-muted-foreground">
-                    {language === 'ar' ? 'تم اختيار:' : 'Selected:'} {adhanOptions.find(opt => opt.value === selectedAdhan)?.label}
+                    تم اختيار: {adhanOptions.find(opt => opt.value === selectedAdhan)?.label}
                   </span>
                   <Button variant="outline" size="sm" onClick={playAdhanPreview}>
                     <Volume2 className="w-4 h-4 mr-2" />
-                    {language === 'ar' ? 'استمع' : 'Preview'}
+                    {t('previewAdhan')}
                   </Button>
                 </div>
               </div>

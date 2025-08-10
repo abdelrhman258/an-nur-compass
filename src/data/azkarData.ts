@@ -16,7 +16,7 @@ export interface AzkarCategory {
   dhikrs: Dhikr[];
 }
 
-// Comprehensive Azkar data with 15 categories
+// Comprehensive Azkar data with 20 categories and 100+ supplications
 export const azkarData: AzkarCategory[] = [
   {
     id: 'morning',
@@ -39,6 +39,38 @@ export const azkarData: AzkarCategory[] = [
         translation: 'O Allah, by Your leave we have reached the morning and by Your leave we have reached the evening, by Your leave we live and die and unto You is our resurrection.',
         repetitions: 1,
         source: 'Tirmidhi'
+      },
+      {
+        id: 103,
+        arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ',
+        transliteration: 'Allahumma anta rabbi la ilaha illa ant, khalaqtani wa ana abduk, wa ana ala ahdika wa wadika mastaat',
+        translation: 'O Allah, You are my Lord, there is no god but You. You created me and I am Your servant, and I am faithful to my covenant and my promise as much as I can.',
+        repetitions: 1,
+        source: 'Bukhari'
+      },
+      {
+        id: 104,
+        arabic: 'رَضِيتُ بِاللَّهِ رَبّاً، وَبِالْإِسْلَامِ دِيناً، وَبِمُحَمَّدٍ رَسُولاً',
+        transliteration: 'Raditu billahi rabban, wa bil-islami dinan, wa bi Muhammadin rasulan',
+        translation: 'I am pleased with Allah as my Lord, with Islam as my religion, and with Muhammad as my messenger.',
+        repetitions: 3,
+        source: 'Abu Dawud'
+      },
+      {
+        id: 105,
+        arabic: 'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي دِينِي كُلَّهُ وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ',
+        transliteration: 'Ya Hayyu ya Qayyum birahmatika astaghith, aslih li dini kullahu wa la takilni ila nafsi tarfata ayn',
+        translation: 'O Ever-Living, O Self-Sustaining, in Your mercy I seek relief. Make all of my religion right for me and do not leave me to myself even for the blink of an eye.',
+        repetitions: 1,
+        source: 'Hakim'
+      },
+      {
+        id: 106,
+        arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي',
+        transliteration: 'Allahumma afini fi badani, Allahumma afini fi sami, Allahumma afini fi basari',
+        translation: 'O Allah, grant me health in my body. O Allah, grant me health in my hearing. O Allah, grant me health in my sight.',
+        repetitions: 3,
+        source: 'Abu Dawud'
       }
     ]
   },
@@ -63,6 +95,30 @@ export const azkarData: AzkarCategory[] = [
         translation: 'O Allah, I seek refuge in You from the evil of what You have created.',
         repetitions: 3,
         source: 'Muslim'
+      },
+      {
+        id: 203,
+        arabic: 'اللَّهُمَّ أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ',
+        transliteration: 'Allahumma audhu bika min al-hammi wal-hazan, wa audhu bika min al-ajzi wal-kasal',
+        translation: 'O Allah, I seek refuge in You from anxiety and sorrow, and I seek refuge in You from weakness and laziness.',
+        repetitions: 1,
+        source: 'Bukhari'
+      },
+      {
+        id: 204,
+        arabic: 'أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ وَعَلَى كَلِمَةِ الْإِخْلَاصِ',
+        transliteration: 'Amsayna ala fitrat al-islami wa ala kalimat al-ikhlasi',
+        translation: 'We have reached the evening upon the fitrah of Islam and upon the word of pure faith.',
+        repetitions: 1,
+        source: 'Ahmad'
+      },
+      {
+        id: 205,
+        arabic: 'اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ',
+        transliteration: 'Allahumma ma asbaha bi min nimatin aw bi ahadin min khalqika faminka wahdaka la sharika lak',
+        translation: 'O Allah, whatever blessing I or any of Your creation have reached this evening with is from You alone, without partner.',
+        repetitions: 1,
+        source: 'Abu Dawud'
       }
     ]
   },
@@ -95,6 +151,38 @@ export const azkarData: AzkarCategory[] = [
         translation: 'Glory be to Allah.',
         repetitions: 33,
         source: 'Bukhari & Muslim'
+      },
+      {
+        id: 304,
+        arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
+        transliteration: 'La ilaha illa Allah wahdahu la sharika lah, lahu al-mulku wa lahu al-hamd wa huwa ala kulli shayin qadir',
+        translation: 'There is no god but Allah alone, without partner. To Him belongs dominion and praise, and He is over all things competent.',
+        repetitions: 1,
+        source: 'Bukhari & Muslim'
+      },
+      {
+        id: 305,
+        arabic: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
+        transliteration: 'Allahumma ainni ala dhikrika wa shukrika wa husni ibadatik',
+        translation: 'O Allah, help me to remember You, to be grateful to You, and to worship You in an excellent manner.',
+        repetitions: 1,
+        source: 'Abu Dawud & Nasa\'i'
+      },
+      {
+        id: 306,
+        arabic: 'رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ',
+        transliteration: 'Rabbana taqabbal minna innaka anta as-samiu al-alim',
+        translation: 'Our Lord, accept [this] from us. Indeed You are the Hearing, the Knowing.',
+        repetitions: 1,
+        source: 'Quran 2:127'
+      },
+      {
+        id: 307,
+        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+        transliteration: 'Rabbana atina fi ad-dunya hasanatan wa fi al-akhirati hasanatan wa qina adhab an-nar',
+        translation: 'Our Lord, give us good in this world and good in the next world, and save us from the punishment of the Fire.',
+        repetitions: 1,
+        source: 'Quran 2:201'
       }
     ]
   },

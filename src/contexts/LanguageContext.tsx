@@ -88,6 +88,12 @@ const translations = {
     continueReading: 'متابعة القراءة',
     bookmarkSaved: 'تم حفظ العلامة المرجعية',
     resumeReading: 'استكمال القراءة من',
+    adhanNotifications: 'تنبيهات الأذان',
+    enableNotifications: 'تفعيل التنبيهات',
+    disableNotifications: 'إيقاف التنبيهات',
+    previewAdhan: 'استمع للأذان',
+    notificationsEnabled: 'تم تفعيل تنبيهات الأذان',
+    notificationsDisabled: 'تم إيقاف تنبيهات الأذان',
     
     // Azkar categories
     azkarCategories: 'أقسام الأذكار',
@@ -227,6 +233,14 @@ const translations = {
     shareText: 'مشاركة النص',
     repeat: 'تكرار',
     times: 'مرات',
+    dhikrCounter: 'عداد الذكر',
+    completed: 'مكتمل',
+    adhanNotifications: 'تنبيهات الأذان',
+    enableNotifications: 'تفعيل التنبيهات',
+    disableNotifications: 'إيقاف التنبيهات',
+    previewAdhan: 'استمع للأذان',
+    notificationsEnabled: 'تم تفعيل تنبيهات الأذان',
+    notificationsDisabled: 'تم إيقاف تنبيهات الأذان',
     
     // Mosques
     nearbyMosques: 'المساجد القريبة',

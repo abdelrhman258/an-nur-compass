@@ -11,6 +11,7 @@ export interface AppSettings {
   preferredReciter: string;
   preferredAdhan: string;
   showTranslations: boolean;
+  adhanNotificationsEnabled: boolean;
   lastReadingProgress?: ReadingProgress;
 }
 
@@ -84,7 +85,8 @@ class StorageService {
     return {
       preferredReciter: 'alafasy',
       preferredAdhan: 'makkah',
-      showTranslations: false // Arabic only by default
+      showTranslations: false, // Arabic only by default
+      adhanNotificationsEnabled: false
     };
   }
 

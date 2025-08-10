@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -19,7 +19,16 @@ import mosqueHero from '@/assets/mosque-hero.jpg';
 const Index = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  const [currentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every minute for real-time display
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Format current date in both Gregorian and Hijri
   const gregorianDate = currentTime.toLocaleDateString('en-US', {
