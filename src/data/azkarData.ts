@@ -305,6 +305,126 @@ export const azkarData: AzkarCategory[] = [
         source: 'Abu Dawud, Tirmidhi & Nasa\'i'
       }
     ]
+  },
+  {
+    id: 'hajj',
+    name: 'Hajj & Umrah',
+    arabicName: 'الحج والعمرة',
+    description: 'Duas for Hajj and Umrah pilgrimage',
+    dhikrs: [
+      {
+        id: 1601,
+        arabic: 'لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ',
+        transliteration: 'Labbayka Allahumma labbayk, labbayka la sharika laka labbayk',
+        translation: 'Here I am, O Allah, here I am. Here I am, You have no partner, here I am.',
+        repetitions: 1,
+        source: 'Bukhari & Muslim'
+      },
+      {
+        id: 1602,
+        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+        transliteration: 'Rabbana atina fi\'d-dunya hasanatan wa fi\'l-akhirati hasanatan wa qina \'adhab an-nar',
+        translation: 'Our Lord, give us good in this world and good in the next world, and save us from the punishment of the Fire.',
+        repetitions: 7,
+        source: 'Quran 2:201'
+      }
+    ]
+  },
+  {
+    id: 'fasting',
+    name: 'Fasting Duas',
+    arabicName: 'أدعية الصيام',
+    description: 'Supplications during fasting and breaking fast',
+    dhikrs: [
+      {
+        id: 1701,
+        arabic: 'اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ',
+        transliteration: 'Allahumma laka sumtu wa \'ala rizqika aftart',
+        translation: 'O Allah, for You I have fasted and with Your provision I break my fast.',
+        repetitions: 1,
+        source: 'Abu Dawud'
+      },
+      {
+        id: 1702,
+        arabic: 'ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ',
+        transliteration: 'Dhahaba az-zama\'u wa abtallatil-\'uruqu wa thabata al-ajru in sha Allah',
+        translation: 'The thirst is gone, the veins are moistened, and the reward is confirmed, if Allah wills.',
+        repetitions: 1,
+        source: 'Abu Dawud'
+      }
+    ]
+  },
+  {
+    id: 'repentance',
+    name: 'Repentance (Tawbah)',
+    arabicName: 'التوبة',
+    description: 'Duas for seeking forgiveness and repentance',
+    dhikrs: [
+      {
+        id: 1801,
+        arabic: 'اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي',
+        transliteration: 'Allahumma innaka \'afuwwun tuhibbu al-\'afwa fa\'fu \'anni',
+        translation: 'O Allah, You are Most Forgiving, and You love forgiveness; so forgive me.',
+        repetitions: 3,
+        source: 'Tirmidhi & Ibn Majah'
+      },
+      {
+        id: 1802,
+        arabic: 'رَبِّ اغْفِرْ لِي ذَنْبِي وَخَطَئِي وَجَهْلِي وَمَا أَسْرَرْتُ وَمَا أَعْلَنْتُ',
+        transliteration: 'Rabbi ghfir li dhanbi wa khata\'i wa jahli wa ma asrartu wa ma a\'lant',
+        translation: 'My Lord, forgive my sins, my mistakes, my ignorance, what I have concealed and what I have done openly.',
+        repetitions: 3,
+        source: 'Bukhari & Muslim'
+      }
+    ]
+  },
+  {
+    id: 'marriage',
+    name: 'Marriage & Family',
+    arabicName: 'الزواج والأسرة',
+    description: 'Duas for marriage, spouse, and family life',
+    dhikrs: [
+      {
+        id: 1901,
+        arabic: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ',
+        transliteration: 'Rabbana hab lana min azwajina wa dhurriyyatina qurrata a\'yun',
+        translation: 'Our Lord, grant us from among our wives and offspring comfort to our eyes.',
+        repetitions: 1,
+        source: 'Quran 25:74'
+      },
+      {
+        id: 1902,
+        arabic: 'بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ',
+        transliteration: 'Baraka Allahu laka wa baraka \'alayka wa jama\'a baynakuma fi khayr',
+        translation: 'May Allah bless you and shower His blessings upon you, and unite you both in goodness.',
+        repetitions: 1,
+        source: 'Abu Dawud & Tirmidhi'
+      }
+    ]
+  },
+  {
+    id: 'success',
+    name: 'Success & Achievement',
+    arabicName: 'النجاح والإنجاز',
+    description: 'Duas for success in endeavors and achievements',
+    dhikrs: [
+      {
+        id: 2001,
+        arabic: 'رَبِّ أَدْخِلْنِي مُدْخَلَ صِدْقٍ وَأَخْرِجْنِي مُخْرَجَ صِدْقٍ',
+        transliteration: 'Rabbi adkhilni mudkhala sidqin wa akhrijni mukhraja sidq',
+        translation: 'My Lord, cause me to enter a sound entrance and to exit a sound exit.',
+        repetitions: 1,
+        source: 'Quran 17:80'
+      },
+      {
+        id: 2002,
+        arabic: 'وَقُل رَّبِّ زِدْنِي عِلْماً',
+        transliteration: 'Wa qul rabbi zidni \'ilman',
+        translation: 'And say: My Lord, increase me in knowledge.',
+        repetitions: 10,
+        source: 'Quran 20:114'
+      }
+    ]
   }
 ];
 
