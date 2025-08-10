@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Play, Pause, Volume2, Languages } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, Book, Play, Pause } from 'lucide-react';
+import { quranService, QuranSurahInfo } from '../services/quranService';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { quranData, getSurah } from '@/data/quranData';
 import LanguageToggle from '@/components/LanguageToggle';
 
 const Quran = () => {
@@ -14,37 +14,66 @@ const Quran = () => {
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [currentVerse, setCurrentVerse] = useState(0);
+  const [currentVerse, setCurrentVerse] = useState(1);
+  const [surahs, setSurahs] = useState<QuranSurahInfo[]>([]);
+  const [currentSurahData, setCurrentSurahData] = useState<{ arabic: any; english: any } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [surahLoading, setSurahLoading] = useState(false);
 
-  const handleSurahClick = (surahNumber: number) => {
+  useEffect(() => {
+    const loadSurahs = async () => {
+      setLoading(true);
+      try {
+        const surahsList = await quranService.getAllSurahs();
+        setSurahs(surahsList);
+      } catch (error) {
+        console.error('Error loading Surahs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSurahs();
+  }, []);
+
+  const handleSurahClick = async (surahNumber: number) => {
+    setSurahLoading(true);
     setSelectedSurah(surahNumber);
-    setCurrentVerse(0);
+    setCurrentVerse(1);
+    
+    try {
+      const surahData = await quranService.getSurah(surahNumber);
+      setCurrentSurahData(surahData);
+    } catch (error) {
+      console.error('Error loading Surah:', error);
+    } finally {
+      setSurahLoading(false);
+    }
   };
 
   const toggleAudio = () => {
     setIsPlaying(!isPlaying);
-    // In a real app, this would control Sheikh Al-Minshawi recitation
   };
 
-  const currentSurah = selectedSurah ? getSurah(selectedSurah) : null;
+  const currentSurahInfo = selectedSurah ? surahs.find(s => s.number === selectedSurah) : null;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-primary text-primary-foreground">
+      <div className="bg-gradient-islamic text-primary-foreground">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/')}
+                onClick={() => selectedSurah ? setSelectedSurah(null) : navigate('/')}
                 className="text-primary-foreground hover:bg-primary-light/20"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               <div className="flex items-center gap-3">
-                <BookOpen className="w-6 h-6" />
+                <Book className="w-6 h-6" />
                 <h1 className="text-2xl font-bold">{t('quran')}</h1>
               </div>
             </div>
@@ -54,146 +83,169 @@ const Quran = () => {
       </div>
 
       <div className="px-6 py-6">
-        {!selectedSurah ? (
-          /* Surah List */
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-xl font-semibold mb-6 text-center islamic-heading">
-              {t('chooseSuprah')}
-            </h2>
-            
-            <div className="space-y-3">
-              {quranData.map((surah) => (
-                <Card 
-                  key={surah.number}
-                  className="prayer-card cursor-pointer bg-card hover:bg-accent/20 border border-border/50"
-                  onClick={() => handleSurahClick(surah.number)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold">
-                          {surah.number}
-                        </div>
-                        <div className={language === 'ar' ? 'text-right' : 'text-left'}>
-                          <h3 className="font-semibold text-foreground flex items-center gap-2">
-                            {language === 'ar' ? surah.arabicName : surah.name}
-                            {language === 'ar' && (
-                              <span className="text-sm font-normal text-muted-foreground">
-                                ({surah.name})
-                              </span>
-                            )}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {language === 'ar' ? surah.name : surah.translation}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={`text-${language === 'ar' ? 'left' : 'right'}`}>
-                        <Badge variant="secondary" className="mb-1">
-                          {surah.verses} {t('verses')}
-                        </Badge>
-                        <p className="text-xs text-muted-foreground">
-                          {language === 'ar' ? (surah.revelation === 'Meccan' ? 'مكية' : 'مدنية') : surah.revelation}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* Surah Reading View */
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
-              <Button 
-                variant="outline" 
-                onClick={() => setSelectedSurah(null)}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t('backToSurahs')}
-              </Button>
+        <div className="max-w-4xl mx-auto">
+          
+          {!selectedSurah ? (
+            /* Surah List */
+            <>
+              <h2 className="text-xl font-semibold mb-6 text-center islamic-heading">
+                {t('chooseSuprah')}
+              </h2>
               
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleAudio}
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">{t('loading')}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {surahs.map((surah) => (
+                    <Card 
+                      key={surah.number}
+                      className="prayer-card cursor-pointer bg-card hover:bg-accent/20 border border-border/50"
+                      onClick={() => handleSurahClick(surah.number)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-gradient-islamic flex items-center justify-center text-primary-foreground font-bold">
+                              {surah.number}
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-foreground">
+                                {language === 'ar' ? surah.name : surah.englishName}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {language === 'ar' ? surah.englishName : surah.englishNameTranslation}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">
+                              {surah.numberOfAyahs} {t('verses')}
+                            </p>
+                            <Badge variant={surah.revelationType === 'Meccan' ? 'default' : 'secondary'}>
+                              {t(surah.revelationType.toLowerCase())}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            /* Surah Reading View */
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedSurah(null)}
                   className="flex items-center gap-2"
                 >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  {isPlaying ? t('pause') : t('play')}
+                  <ArrowLeft className="w-4 h-4" />
+                  {t('backToSurahs')}
                 </Button>
-                <Volume2 className="w-5 h-5 text-muted-foreground" />
+                
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={toggleAudio}
+                  >
+                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {isPlaying ? t('pause') : t('play')}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTranslation(!showTranslation)}
+                  >
+                    {showTranslation ? t('arabic') : t('translation')}
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {/* Surah Header */}
-            <Card className="mb-8 bg-gradient-islamic text-primary-foreground border-0">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl mb-2">
-                  {language === 'ar' ? currentSurah?.arabicName : currentSurah?.name}
-                </CardTitle>
-                <p className="text-primary-foreground/80">
-                  {currentSurah?.translation}
-                </p>
-                <Badge variant="secondary" className="w-fit mx-auto mt-2">
-                  {currentSurah?.verses} {t('verses')}
-                </Badge>
-              </CardHeader>
-            </Card>
-
-            {/* Translation Toggle */}
-            <div className="flex justify-center mb-6">
-              <Button
-                variant="outline"
-                onClick={() => setShowTranslation(!showTranslation)}
-                className="flex items-center gap-2"
-              >
-                <Languages className="w-4 h-4" />
-                {showTranslation ? t('arabic') : t('translation')}
-              </Button>
-            </div>
-
-            {/* Bismillah */}
-            {selectedSurah !== 9 && (
-              <div className="text-center mb-8 p-6 bg-accent/30 rounded-xl">
-                <p className="arabic-text text-2xl text-primary mb-2">
-                  بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('bismillah')}
-                </p>
-              </div>
-            )}
-
-            {/* Verses */}
-            {currentSurah && (
-              <div className="space-y-6">
-                {currentSurah.versesData.map((verse, index) => (
-                  <Card key={index} className="p-6 bg-card border border-border/50">
-                    <div className="text-center space-y-4">
-                      <p className="arabic-text text-xl md:text-2xl text-primary leading-relaxed">
-                        {verse.arabic}
-                      </p>
-                      <div className="w-12 h-px bg-gradient-secondary mx-auto"></div>
-                      {showTranslation && (
-                        <p className="text-muted-foreground leading-relaxed">
-                          {verse.translation}
-                        </p>
-                      )}
-                      <Badge variant="outline" className="text-xs">
-                        {t('verse')} {verse.number}
-                      </Badge>
-                    </div>
+              {surahLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">{t('loading')}</p>
+                </div>
+              ) : currentSurahInfo && currentSurahData ? (
+                <div className="space-y-6">
+                  <Card className="bg-gradient-islamic text-primary-foreground border-0">
+                    <CardContent className="p-6 text-center">
+                      <h1 className="text-3xl font-bold mb-2 arabic-text">
+                        {currentSurahInfo.name}
+                      </h1>
+                      <h2 className="text-xl mb-2">{currentSurahInfo.englishName}</h2>
+                      <p className="text-lg opacity-90">{currentSurahInfo.englishNameTranslation}</p>
+                      <div className="flex items-center justify-center gap-4 mt-4">
+                        <Badge variant="secondary">
+                          {currentSurahInfo.numberOfAyahs} {t('verses')}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {t(currentSurahInfo.revelationType.toLowerCase())}
+                        </Badge>
+                      </div>
+                    </CardContent>
                   </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+
+                  {/* Bismillah - Show for all Surahs except Surah 9 (At-Tawbah) */}
+                  {selectedSurah !== 9 && (
+                    <Card className="bg-accent/20 border border-accent/30">
+                      <CardContent className="p-6 text-center">
+                        <p className="arabic-text text-2xl md:text-3xl text-primary leading-relaxed">
+                          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                        </p>
+                        <p className="text-muted-foreground mt-2 italic">
+                          {t('bismillah')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Verses */}
+                  <div className="space-y-6">
+                    {currentSurahData.arabic.ayahs.map((verse: any, index: number) => (
+                      <Card key={verse.number} className="bg-card border border-border/50">
+                        <CardContent className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3 mb-4">
+                              <Badge variant="outline" className="text-xs">
+                                {t('verse')} {verse.numberInSurah}
+                              </Badge>
+                            </div>
+                            
+                            <div className="text-center">
+                              <p className="arabic-text text-xl md:text-2xl text-primary leading-relaxed mb-4">
+                                {verse.text}
+                              </p>
+                              <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
+                            </div>
+                            
+                            {showTranslation && currentSurahData.english.ayahs[index] && (
+                              <div className="text-center">
+                                <p className="text-foreground leading-relaxed">
+                                  {currentSurahData.english.ayahs[index].text}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+
+        </div>
       </div>
+
+      {/* Islamic Pattern Background */}
+      <div className="fixed inset-0 pattern-islamic opacity-5 pointer-events-none"></div>
     </div>
   );
 };

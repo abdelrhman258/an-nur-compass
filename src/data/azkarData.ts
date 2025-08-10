@@ -1,5 +1,4 @@
-// Comprehensive Azkar data with Arabic text, transliteration, and English translation
-
+// Complete Azkar data structure with comprehensive categories
 export interface Dhikr {
   id: number;
   arabic: string;
@@ -17,52 +16,29 @@ export interface AzkarCategory {
   dhikrs: Dhikr[];
 }
 
+// Comprehensive Azkar data with 15 categories
 export const azkarData: AzkarCategory[] = [
   {
     id: 'morning',
     name: 'Morning Azkar',
     arabicName: 'أذكار الصباح',
-    description: 'Remembrance and supplications for the morning',
+    description: 'Remembrances and supplications for the morning',
     dhikrs: [
       {
-        id: 1,
-        arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
-        transliteration: 'Asbahna wa asbahal-mulku lillahi, walhamdu lillahi, la ilaha illa Allah wahdahu la sharika lahu, lahul-mulku wa lahul-hamdu wa huwa \'ala kulli shay\'in qadir',
-        translation: 'We have reached the morning and at this very time unto Allah belongs all sovereignty. All praise is for Allah. None has the right to be worshipped except Allah, alone, without partner, to Him belongs all sovereignty and praise and He is over all things omnipotent.',
+        id: 101,
+        arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ',
+        transliteration: 'Asbahna wa asbahal-mulku lillahi, walhamdu lillahi, la ilaha illa Allahu wahdahu la sharika lah',
+        translation: 'We have reached the morning and with it all dominion belongs to Allah. Praise is to Allah. There is no god but Allah alone, without partner.',
         repetitions: 1,
         source: 'Muslim'
       },
       {
-        id: 2,
-        arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ',
-        transliteration: 'Allahumma bika asbahna wa bika amsayna wa bika nahya wa bika namutu wa ilaykan-nushur',
+        id: 102,
+        arabic: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ',
+        transliteration: 'Allahumma bika asbahna, wa bika amsayna, wa bika nahya, wa bika namutu wa ilaykan-nushur',
         translation: 'O Allah, by Your leave we have reached the morning and by Your leave we have reached the evening, by Your leave we live and die and unto You is our resurrection.',
         repetitions: 1,
         source: 'Tirmidhi'
-      },
-      {
-        id: 3,
-        arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ',
-        transliteration: 'Allahumma anta rabbi la ilaha illa anta, khalaqtani wa ana \'abduka, wa ana \'ala \'ahdika wa wa\'dika mastata\'tu',
-        translation: 'O Allah, You are my Lord, none has the right to be worshipped except You, You created me and I am Your servant and I abide to Your covenant and promise as best I can.',
-        repetitions: 1,
-        source: 'Bukhari'
-      },
-      {
-        id: 4,
-        arabic: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ رَسُولًا',
-        transliteration: 'Raditu billahi rabban, wa bil-islami dinan, wa bi Muhammadin salla Allahu \'alayhi wa sallama rasulan',
-        translation: 'I am pleased with Allah as a Lord, and Islam as a religion and Muhammad (peace be upon him) as a Messenger.',
-        repetitions: 3,
-        source: 'Abu Dawud'
-      },
-      {
-        id: 5,
-        arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ',
-        transliteration: 'Subhan Allahi wa bihamdihi \'adada khalqihi, wa rida nafsihi, wa zinata \'arshihi, wa midada kalimatihi',
-        translation: 'Glorified is Allah and praised is He, to the number of His creation and His pleasure, and to the weight of His throne, and to the ink of His words.',
-        repetitions: 3,
-        source: 'Muslim'
       }
     ]
   },
@@ -70,47 +46,23 @@ export const azkarData: AzkarCategory[] = [
     id: 'evening',
     name: 'Evening Azkar',
     arabicName: 'أذكار المساء',
-    description: 'Remembrance and supplications for the evening',
+    description: 'Remembrances and supplications for the evening',
     dhikrs: [
       {
-        id: 1,
-        arabic: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
-        transliteration: 'Amsayna wa amsal-mulku lillahi, walhamdu lillahi, la ilaha illa Allah wahdahu la sharika lahu, lahul-mulku wa lahul-hamdu wa huwa \'ala kulli shay\'in qadir',
-        translation: 'We have reached the evening and at this very time unto Allah belongs all sovereignty. All praise is for Allah. None has the right to be worshipped except Allah, alone, without partner, to Him belongs all sovereignty and praise and He is over all things omnipotent.',
+        id: 201,
+        arabic: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ',
+        transliteration: 'Amsayna wa amsal-mulku lillahi, walhamdu lillahi, la ilaha illa Allahu wahdahu la sharika lah',
+        translation: 'We have reached the evening and with it all dominion belongs to Allah. Praise is to Allah. There is no god but Allah alone, without partner.',
         repetitions: 1,
         source: 'Muslim'
       },
       {
-        id: 2,
-        arabic: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
-        transliteration: 'A\'udhu bi kalimatil-lahit-tammati min sharri ma khalaqa',
-        translation: 'I seek refuge in the perfect words of Allah from the evil of what He has created.',
+        id: 202,
+        arabic: 'اللَّهُمَّ أَعُوذُ بِكَ مِنْ شَرِّ مَا خَلَقْتَ',
+        transliteration: 'Allahumma a\'udhu bika min sharri ma khalaqt',
+        translation: 'O Allah, I seek refuge in You from the evil of what You have created.',
         repetitions: 3,
         source: 'Muslim'
-      },
-      {
-        id: 3,
-        arabic: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَهَ إِلَّا أَنْتَ',
-        transliteration: 'Allahumma \'afini fi badani, Allahumma \'afini fi sam\'i, Allahumma \'afini fi basari, la ilaha illa anta',
-        translation: 'O Allah, grant my body health, O Allah, grant my hearing health, O Allah, grant my sight health. None has the right to be worshipped except You.',
-        repetitions: 3,
-        source: 'Abu Dawud'
-      },
-      {
-        id: 4,
-        arabic: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
-        transliteration: 'Hasbiya Allahu la ilaha illa huwa \'alayhi tawakkaltu wa huwa rabbul-\'arshil-\'adheem',
-        translation: 'Allah is sufficient for me, none has the right to be worshipped except Him, upon Him I rely and He is Lord of the exalted throne.',
-        repetitions: 7,
-        source: 'Abu Dawud'
-      },
-      {
-        id: 5,
-        arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ',
-        transliteration: 'Allahumma inni as\'alukal-\'afwa wal-\'afiyata fid-dunya wal-akhirah',
-        translation: 'O Allah, I ask You for forgiveness and well-being in this world and the next.',
-        repetitions: 1,
-        source: 'Tirmidhi'
       }
     ]
   },
@@ -118,47 +70,31 @@ export const azkarData: AzkarCategory[] = [
     id: 'afterPrayer',
     name: 'After Prayer Azkar',
     arabicName: 'أذكار بعد الصلاة',
-    description: 'Supplications to recite after completing prayers',
+    description: 'Remembrances after completing the five daily prayers',
     dhikrs: [
       {
-        id: 1,
-        arabic: 'سُبْحَانَ اللَّهِ',
-        transliteration: 'Subhan Allah',
-        translation: 'Glory is to Allah',
-        repetitions: 33,
-        source: 'Bukhari & Muslim'
-      },
-      {
-        id: 2,
-        arabic: 'الْحَمْدُ لِلَّهِ',
-        transliteration: 'Alhamdu lillah',
-        translation: 'All praise is due to Allah',
-        repetitions: 33,
-        source: 'Bukhari & Muslim'
-      },
-      {
-        id: 3,
+        id: 301,
         arabic: 'اللَّهُ أَكْبَرُ',
         transliteration: 'Allahu Akbar',
-        translation: 'Allah is the Greatest',
+        translation: 'Allah is the Greatest.',
         repetitions: 34,
         source: 'Bukhari & Muslim'
       },
       {
-        id: 4,
-        arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
-        transliteration: 'La ilaha illa Allah wahdahu la sharika lahu, lahul-mulku wa lahul-hamdu wa huwa \'ala kulli shay\'in qadir',
-        translation: 'None has the right to be worshipped except Allah, alone, without partner, to Him belongs all sovereignty and praise and He is over all things omnipotent.',
-        repetitions: 1,
-        source: 'Muslim'
+        id: 302,
+        arabic: 'الْحَمْدُ لِلَّهِ',
+        transliteration: 'Alhamdulillah',
+        translation: 'All praise is to Allah.',
+        repetitions: 33,
+        source: 'Bukhari & Muslim'
       },
       {
-        id: 5,
-        arabic: 'آيَةُ الْكُرْسِيِّ',
-        transliteration: 'Ayat al-Kursi',
-        translation: 'Allah - there is no deity except Him, the Ever-Living, the Sustainer of existence...',
-        repetitions: 1,
-        source: 'Nasai'
+        id: 303,
+        arabic: 'سُبْحَانَ اللَّهِ',
+        transliteration: 'Subhan Allah',
+        translation: 'Glory be to Allah.',
+        repetitions: 33,
+        source: 'Bukhari & Muslim'
       }
     ]
   },
@@ -166,106 +102,218 @@ export const azkarData: AzkarCategory[] = [
     id: 'beforeSleep',
     name: 'Before Sleep Azkar',
     arabicName: 'أذكار النوم',
-    description: 'Supplications to recite before going to sleep',
+    description: 'Supplications before going to sleep',
     dhikrs: [
       {
-        id: 1,
-        arabic: 'اللَّهُمَّ بِاسْمِكَ أَمُوتُ وَأَحْيَا',
-        transliteration: 'Allahumma bismika amutu wa ahya',
-        translation: 'O Allah, in Your name I live and die.',
+        id: 401,
+        arabic: 'اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ',
+        transliteration: 'Allahumma aslamtu nafsi ilayk, wa fawwadtu amri ilayk',
+        translation: 'O Allah, I submit my soul unto You, and I entrust my affair unto You.',
+        repetitions: 1,
+        source: 'Bukhari & Muslim'
+      },
+      {
+        id: 402,
+        arabic: 'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا',
+        transliteration: 'Bismika Allahumma amutu wa ahya',
+        translation: 'In Your name, O Allah, I die and I live.',
         repetitions: 1,
         source: 'Bukhari'
+      }
+    ]
+  },
+  {
+    id: 'duasSunnah',
+    name: 'Duas from Sunnah',
+    arabicName: 'أدعية من السنة',
+    description: 'Authentic supplications from Prophet Muhammad (peace be upon him)',
+    dhikrs: [
+      {
+        id: 501,
+        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+        transliteration: 'Rabbana atina fi\'d-dunya hasanatan wa fi\'l-akhirati hasanatan wa qina \'adhab an-nar',
+        translation: 'Our Lord, give us good in this world and good in the next world, and save us from the punishment of the Fire.',
+        repetitions: 1,
+        source: 'Quran 2:201'
+      }
+    ]
+  },
+  {
+    id: 'istighfar',
+    name: 'Istighfar (Seeking Forgiveness)',
+    arabicName: 'الاستغفار',
+    description: 'Duas for seeking Allah\'s forgiveness',
+    dhikrs: [
+      {
+        id: 601,
+        arabic: 'أَسْتَغْفِرُ اللَّهَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ',
+        transliteration: 'Astaghfirullaha lladhi la ilaha illa huwa al-hayyu al-qayyumu wa atubu ilayh',
+        translation: 'I seek forgiveness from Allah, there is no god but Him, the Ever-Living, the Self-Sustaining, and I repent to Him.',
+        repetitions: 3,
+        source: 'Abu Dawud'
       },
       {
-        id: 2,
-        arabic: 'سُبْحَانَ اللَّهِ',
-        transliteration: 'Subhan Allah',
-        translation: 'Glory is to Allah',
-        repetitions: 33,
-        source: 'Bukhari & Muslim'
-      },
-      {
-        id: 3,
-        arabic: 'الْحَمْدُ لِلَّهِ',
-        transliteration: 'Alhamdu lillah',
-        translation: 'All praise is due to Allah',
-        repetitions: 33,
-        source: 'Bukhari & Muslim'
-      },
-      {
-        id: 4,
-        arabic: 'اللَّهُ أَكْبَرُ',
-        transliteration: 'Allahu Akbar',
-        translation: 'Allah is the Greatest',
-        repetitions: 34,
-        source: 'Bukhari & Muslim'
-      },
-      {
-        id: 5,
-        arabic: 'قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ',
-        transliteration: 'Qul huwa Allahu ahad, Allah as-samad, lam yalid wa lam yulad, wa lam yakun lahu kufuwan ahad',
-        translation: 'Say: He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, Nor is there to Him any equivalent.',
+        id: 602,
+        arabic: 'رَبِّ اغْفِرْ لِي ذَنْبِي وَخَطَئِي وَجَهْلِي',
+        transliteration: 'Rabbi ghfir li dhanbi wa khata\'i wa jahli',
+        translation: 'O my Lord, forgive my sins, my mistakes, and my ignorance.',
         repetitions: 3,
         source: 'Bukhari'
       }
     ]
   },
   {
-    id: 'sunnah',
-    name: 'Duas from Sunnah',
-    arabicName: 'أدعية من السنة',
-    description: 'Supplications from the teachings of Prophet Muhammad (PBUH)',
+    id: 'tahajjud',
+    name: 'Tahajjud (Night Prayer)',
+    arabicName: 'تهجد',
+    description: 'Duas for night prayer and late night worship',
     dhikrs: [
       {
-        id: 1,
-        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
-        transliteration: 'Rabbana atina fi\'d-dunya hasanatan wa fi\'l-akhirati hasanatan wa qina \'adhab an-nar',
-        translation: 'Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.',
+        id: 701,
+        arabic: 'اللَّهُمَّ لَكَ الْحَمْدُ أَنْتَ قَيِّمُ السَّمَوَاتِ وَالْأَرْضِ وَمَنْ فِيهِنَّ',
+        transliteration: 'Allahumma laka al-hamdu anta qayyim as-samawati wa al-ardi wa man fihinn',
+        translation: 'O Allah, to You belongs all praise. You are the Sustainer of the heavens and the earth and all that is in them.',
         repetitions: 1,
-        source: 'Quran 2:201'
-      },
+        source: 'Bukhari & Muslim'
+      }
+    ]
+  },
+  {
+    id: 'travel',
+    name: 'Travel Duas',
+    arabicName: 'أدعية السفر',
+    description: 'Supplications for traveling and journeys',
+    dhikrs: [
       {
-        id: 2,
+        id: 801,
+        arabic: 'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ',
+        transliteration: 'Subhana alladhi sakhkhara lana hadha wa ma kunna lahu muqrinin wa inna ila rabbina la-munqalibun',
+        translation: 'Glory be to Him who has subjected this to us, and we could never have it (by our efforts). And verily, to our Lord we indeed are to return!',
+        repetitions: 3,
+        source: 'Quran 43:13-14'
+      }
+    ]
+  },
+  {
+    id: 'rain',
+    name: 'Rain & Weather Duas',
+    arabicName: 'أدعية المطر والطقس',
+    description: 'Supplications during rain and different weather',
+    dhikrs: [
+      {
+        id: 901,
+        arabic: 'اللَّهُمَّ صَيِّباً نَافِعاً',
+        transliteration: 'Allahumma sayyiban nafi\'an',
+        translation: 'O Allah, (bring) beneficial rain.',
+        repetitions: 1,
+        source: 'Bukhari'
+      }
+    ]
+  },
+  {
+    id: 'illness',
+    name: 'Illness & Healing',
+    arabicName: 'أدعية المرض والشفاء',
+    description: 'Duas for sickness and seeking healing',
+    dhikrs: [
+      {
+        id: 1001,
+        arabic: 'اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَاسَ وَاشْفِ أَنْتَ الشَّافِي',
+        transliteration: 'Allahumma rabb an-nas, adhhib al-bas washfi anta ash-shafi',
+        translation: 'O Allah, Lord of mankind, remove the hardship and heal, You are the Healer.',
+        repetitions: 3,
+        source: 'Bukhari & Muslim'
+      }
+    ]
+  },
+  {
+    id: 'anxiety',
+    name: 'Anxiety & Stress Relief',
+    arabicName: 'أدعية القلق والضيق',
+    description: 'Duas for anxiety, stress, and emotional relief',
+    dhikrs: [
+      {
+        id: 1101,
+        arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ وَالْعَجْزِ وَالْكَسَلِ',
+        transliteration: 'Allahumma inni a\'udhu bika min al-hammi wa al-hazan wa al-\'ajz wa al-kasal',
+        translation: 'O Allah, I seek refuge in You from worry, grief, incapacity, and laziness.',
+        repetitions: 3,
+        source: 'Bukhari'
+      }
+    ]
+  },
+  {
+    id: 'gratitude',
+    name: 'Gratitude & Praise',
+    arabicName: 'الشكر والحمد',
+    description: 'Expressions of gratitude and praise to Allah',
+    dhikrs: [
+      {
+        id: 1201,
         arabic: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
-        transliteration: 'Allahumma a\'inni \'ala dhikrika wa shukrika wa husni \'ibadatika',
-        translation: 'O Allah, help me remember You, to be grateful to You, and to worship You in an excellent manner.',
+        transliteration: 'Allahumma a\'inni \'ala dhikrika wa shukrika wa husn \'ibadatik',
+        translation: 'O Allah, help me to remember You, thank You, and worship You in the best manner.',
         repetitions: 1,
-        source: 'Abu Dawud'
-      },
+        source: 'Abu Dawud & Nasa\'i'
+      }
+    ]
+  },
+  {
+    id: 'protection',
+    name: 'Protection & Safety',
+    arabicName: 'الحماية والأمان',
+    description: 'Duas for protection from evil and harm',
+    dhikrs: [
       {
-        id: 3,
-        arabic: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي',
-        transliteration: 'Rabbi ishrah li sadri wa yassir li amri',
-        translation: 'My Lord, expand for me my breast and ease for me my task.',
-        repetitions: 1,
-        source: 'Quran 20:25-26'
-      },
+        id: 1301,
+        arabic: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
+        transliteration: 'A\'udhu bi kalimat Allah at-tammat min sharri ma khalaq',
+        translation: 'I seek refuge in the perfect words of Allah from the evil of what He has created.',
+        repetitions: 3,
+        source: 'Muslim'
+      }
+    ]
+  },
+  {
+    id: 'knowledge',
+    name: 'Seeking Knowledge',
+    arabicName: 'طلب العلم',
+    description: 'Duas for seeking beneficial knowledge and wisdom',
+    dhikrs: [
       {
-        id: 4,
-        arabic: 'اللَّهُمَّ إِنَّكَ عُفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي',
-        transliteration: 'Allahumma innaka \'afuwwun tuhibbul-\'afwa fa\'fu \'anni',
-        translation: 'O Allah, indeed You are Pardoning and you love to pardon, so pardon me.',
-        repetitions: 1,
-        source: 'Tirmidhi'
-      },
+        id: 1401,
+        arabic: 'رَبِّ زِدْنِي عِلْماً',
+        transliteration: 'Rabbi zidni \'ilman',
+        translation: 'My Lord, increase me in knowledge.',
+        repetitions: 10,
+        source: 'Quran 20:114'
+      }
+    ]
+  },
+  {
+    id: 'witr',
+    name: 'Witr Prayer Duas',
+    arabicName: 'أدعية صلاة الوتر',
+    description: 'Special supplications for Witr prayer',
+    dhikrs: [
       {
-        id: 5,
-        arabic: 'اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ، وَعَافِنِي فِيمَنْ عَافَيْتَ، وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ',
-        transliteration: 'Allahumma ihdini fiman hadayta, wa \'afini fiman \'afayta, wa tawallani fiman tawallayta',
-        translation: 'O Allah, guide me among those You have guided, grant me security among those You have granted security, and take me into Your care among those You have taken into Your care.',
+        id: 1501,
+        arabic: 'اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ وَعَافِنِي فِيمَنْ عَافَيْتَ',
+        transliteration: 'Allahumma hdini fiman hadayt wa \'afini fiman \'afayt',
+        translation: 'O Allah, guide me among those You have guided, and grant me safety among those You have granted safety.',
         repetitions: 1,
-        source: 'Abu Dawud'
+        source: 'Abu Dawud, Tirmidhi & Nasa\'i'
       }
     ]
   }
 ];
 
-// Helper function to get a specific category
+// Helper function to get a specific Azkar category
 export const getAzkarCategory = (categoryId: string): AzkarCategory | undefined => {
   return azkarData.find(category => category.id === categoryId);
 };
 
-// Helper function to get all category names
+// Helper function to get all Azkar categories for navigation
 export const getAzkarCategories = () => {
   return azkarData.map(category => ({
     id: category.id,
