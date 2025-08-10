@@ -33,8 +33,16 @@ const PrayerTimes = () => {
     storageService.saveAppSettings({ preferredAdhan: value });
   };
 
-  const playAdhanPreview = () => {
-    audioService.playAdhan(selectedAdhan);
+  const playAdhanPreview = async () => {
+    try {
+      await audioService.playAdhan(selectedAdhan);
+      const adhanOptions = audioService.getAdhanOptions();
+      const selectedOption = adhanOptions.find(opt => opt.id === selectedAdhan);
+      toast.success(`تم تشغيل أذان: ${selectedOption?.arabicName}`);
+    } catch (error) {
+      console.error('Error playing Adhan preview:', error);
+      toast.error('فشل في تشغيل الأذان');
+    }
   };
 
   const toggleNotifications = () => {
@@ -89,13 +97,6 @@ const PrayerTimes = () => {
     }
   ];
 
-  // Adhan voice options
-  const adhanOptions = [
-    { value: 'makkah', label: t('makkahImam') },
-    { value: 'madinah', label: t('madinahImam') },
-    { value: 'naqshbandi', label: t('sheikNaqshbandi') },
-    { value: 'rifaat', label: t('sheikRifaat') }
-  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -257,9 +258,9 @@ const PrayerTimes = () => {
                       <SelectValue placeholder={t('selectAdhan')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {adhanOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
+                      {audioService.getAdhanOptions().map((option) => (
+                        <SelectItem key={option.id} value={option.id}>
+                          {option.arabicName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -268,7 +269,7 @@ const PrayerTimes = () => {
                 
                 <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg">
                   <span className="text-sm text-muted-foreground">
-                    تم اختيار: {adhanOptions.find(opt => opt.value === selectedAdhan)?.label}
+                    تم اختيار: {audioService.getAdhanOptions().find(opt => opt.id === selectedAdhan)?.arabicName}
                   </span>
                   <Button variant="outline" size="sm" onClick={playAdhanPreview}>
                     <Volume2 className="w-4 h-4 mr-2" />

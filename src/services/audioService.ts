@@ -44,20 +44,50 @@ class AudioService {
     {
       id: 'makkah',
       name: 'Makkah Imam',
-      arabicName: 'إمام مكة',
-      audioUrl: 'https://archive.org/download/AdhaanMadeenah/Adhaan%20Makkah.mp3'
+      arabicName: 'إمام الحرم المكي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/001.mp3'
     },
     {
       id: 'madinah',
       name: 'Madinah Imam', 
-      arabicName: 'إمام المدينة',
-      audioUrl: 'https://archive.org/download/AdhaanMadeenah/Adhaan%20Madeenah.mp3'
+      arabicName: 'إمام الحرم المدني',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/002.mp3'
     },
     {
       id: 'rifaat',
       name: 'Sheikh Mohammed Rifaat',
       arabicName: 'الشيخ محمد رفعت',
-      audioUrl: 'https://archive.org/download/MohammedRifaatAdhan/Mohammed%20Rifaat%20-%20Adhan.mp3'
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/003.mp3'
+    },
+    {
+      id: 'ghamdi',
+      name: 'Sheikh Saad Al-Ghamdi',
+      arabicName: 'الشيخ سعد الغامدي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/004.mp3'
+    },
+    {
+      id: 'ajmi',
+      name: 'Sheikh Ahmad Al-Ajmi',
+      arabicName: 'الشيخ أحمد العجمي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/005.mp3'
+    },
+    {
+      id: 'alafasy_adhan',
+      name: 'Sheikh Mishary Al-Afasy',
+      arabicName: 'الشيخ مشاري العفاسي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/006.mp3'
+    },
+    {
+      id: 'hudaifi',
+      name: 'Sheikh Ali Al-Hudaifi',
+      arabicName: 'الشيخ علي الحذيفي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/007.mp3'
+    },
+    {
+      id: 'tablawi',
+      name: 'Sheikh Mohammed Al-Tablawi',
+      arabicName: 'الشيخ محمد الطبلاوي',
+      audioUrl: 'https://server13.mp3quran.net/husr/Adhan/008.mp3'
     }
   ];
 
