@@ -83,9 +83,13 @@ class QuranService {
       if (arabicData.code === 200 && englishData.code === 200 && 
           !Array.isArray(arabicData.data) && !Array.isArray(englishData.data)) {
         
+        // Remove Bismillah from individual verses
+        const processedArabic = this.removeBismillahFromVerses(arabicData.data);
+        const processedEnglish = this.removeBismillahFromVerses(englishData.data);
+        
         const result = {
-          arabic: arabicData.data,
-          english: englishData.data
+          arabic: processedArabic,
+          english: processedEnglish
         };
         
         this.cache.set(cacheKey, result);
@@ -96,6 +100,44 @@ class QuranService {
       console.error(`Error fetching Surah ${surahNumber}:`, error);
       return null;
     }
+  }
+
+  // Helper method to remove Bismillah from verses
+  private removeBismillahFromVerses(surah: QuranSurah): QuranSurah {
+    const bismillahArabic = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+    const bismillahEnglishVariants = [
+      'In the name of Allah, the Beneficent, the Merciful.',
+      'In the name of Allah, the Gracious, the Merciful.',
+      'In the Name of Allah, the Most Gracious, the Most Merciful',
+      'In the name of God, the Beneficent, the Merciful'
+    ];
+
+    return {
+      ...surah,
+      ayahs: surah.ayahs.map(verse => ({
+        ...verse,
+        text: this.cleanVerseText(verse.text, bismillahArabic, bismillahEnglishVariants)
+      }))
+    };
+  }
+
+  // Helper method to clean verse text
+  private cleanVerseText(text: string, bismillahArabic: string, bismillahEnglishVariants: string[]): string {
+    let cleanedText = text;
+    
+    // Remove Arabic Bismillah
+    if (cleanedText.includes(bismillahArabic)) {
+      cleanedText = cleanedText.replace(bismillahArabic, '').trim();
+    }
+    
+    // Remove English Bismillah variants
+    bismillahEnglishVariants.forEach(variant => {
+      if (cleanedText.includes(variant)) {
+        cleanedText = cleanedText.replace(variant, '').trim();
+      }
+    });
+    
+    return cleanedText;
   }
 
   // Get a specific verse
