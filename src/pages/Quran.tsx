@@ -209,9 +209,6 @@ const Quran = () => {
                               <h3 className="text-lg font-semibold text-foreground arabic-text">
                                 {surah.name}
                               </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {surah.englishNameTranslation}
-                              </p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -272,7 +269,6 @@ const Quran = () => {
                       <h1 className="text-3xl font-bold mb-2 arabic-text">
                         {currentSurahInfo.name}
                       </h1>
-                      <p className="text-lg opacity-90">{currentSurahInfo.englishNameTranslation}</p>
                       <div className="flex items-center justify-center gap-4 mt-4">
                         <Badge variant="secondary">
                           {currentSurahInfo.numberOfAyahs} {t('verses')}
@@ -290,9 +286,6 @@ const Quran = () => {
                       <CardContent className="p-6 text-center">
                         <p className="arabic-text text-2xl md:text-3xl text-primary leading-relaxed">
                           بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                        </p>
-                        <p className="text-muted-foreground mt-2 italic">
-                          {t('bismillah')}
                         </p>
                       </CardContent>
                     </Card>
