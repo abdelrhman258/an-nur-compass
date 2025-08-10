@@ -34,6 +34,13 @@ const translations = {
     findQibla: 'اتجاه القبلة',
     morningAzkar: 'أذكار الصباح',
     
+    // Feature descriptions
+    quranDescription: 'اقرأ القرآن الكريم كاملاً',
+    prayerTimesDescription: 'أوقات الصلاة الدقيقة لموقعك',
+    qiblaDescription: 'اتجاه الكعبة المشرفة في مكة',
+    azkarDescription: 'الأذكار والأدعية اليومية',
+    mosquesDescription: 'اعثر على المساجد في منطقتك',
+    
     // Prayer times
     fajr: 'الفجر',
     sunrise: 'الشروق',
@@ -153,6 +160,13 @@ const translations = {
     readQuran: 'اقرأ القرآن',
     findQibla: 'اتجاه القبلة',
     morningAzkar: 'أذكار الصباح',
+    
+    // Feature descriptions
+    quranDescription: 'اقرأ القرآن الكريم كاملاً',
+    prayerTimesDescription: 'أوقات الصلاة الدقيقة لموقعك',
+    qiblaDescription: 'اتجاه الكعبة المشرفة في مكة',
+    azkarDescription: 'الأذكار والأدعية اليومية',
+    mosquesDescription: 'اعثر على المساجد في منطقتك',
     
     // Prayer times
     fajr: 'الفجر',

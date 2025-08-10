@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
+import { audioService } from '@/services/audioService';
+import { storageService } from '@/services/storageService';
 
 const PrayerTimes = () => {
   const navigate = useNavigate();
@@ -14,6 +16,21 @@ const PrayerTimes = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [location, setLocation] = useState(language === 'ar' ? "جارٍ تحديد الموقع..." : "Getting location...");
   const [selectedAdhan, setSelectedAdhan] = useState("makkah");
+  
+  useEffect(() => {
+    // Load saved adhan preference
+    const settings = storageService.getAppSettings();
+    setSelectedAdhan(settings.preferredAdhan);
+  }, []);
+
+  const handleAdhanChange = (value: string) => {
+    setSelectedAdhan(value);
+    storageService.saveAppSettings({ preferredAdhan: value });
+  };
+
+  const playAdhanPreview = () => {
+    audioService.playAdhan(selectedAdhan);
+  };
 
   // Prayer times data with Arabic and English names
   const prayerTimes = [
@@ -196,7 +213,7 @@ const PrayerTimes = () => {
                   <label className="text-sm font-medium text-foreground mb-2 block">
                     {t('selectAdhan')}
                   </label>
-                  <Select value={selectedAdhan} onValueChange={setSelectedAdhan}>
+                  <Select value={selectedAdhan} onValueChange={handleAdhanChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder={t('selectAdhan')} />
                     </SelectTrigger>
@@ -214,7 +231,7 @@ const PrayerTimes = () => {
                   <span className="text-sm text-muted-foreground">
                     {language === 'ar' ? 'تم اختيار:' : 'Selected:'} {adhanOptions.find(opt => opt.value === selectedAdhan)?.label}
                   </span>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={playAdhanPreview}>
                     <Volume2 className="w-4 h-4 mr-2" />
                     {language === 'ar' ? 'استمع' : 'Preview'}
                   </Button>

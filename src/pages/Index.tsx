@@ -36,7 +36,7 @@ const Index = () => {
     {
       icon: BookOpen,
       title: t('quran'),
-      description: "Read the complete Quran with translation",
+      description: t('quranDescription'),
       route: "/quran",
       gradient: "bg-gradient-primary",
       iconColor: "text-primary-foreground"
@@ -44,7 +44,7 @@ const Index = () => {
     {
       icon: Clock,
       title: t('prayerTimes'),
-      description: "Accurate prayer timings for your location",
+      description: t('prayerTimesDescription'),
       route: "/prayer-times",
       gradient: "bg-gradient-mosque",
       iconColor: "text-primary-foreground"
@@ -52,7 +52,7 @@ const Index = () => {
     {
       icon: Compass,
       title: t('qibla'),
-      description: "Find the direction to Mecca",
+      description: t('qiblaDescription'),
       route: "/qibla",
       gradient: "bg-gradient-secondary",
       iconColor: "text-secondary-foreground"
@@ -60,7 +60,7 @@ const Index = () => {
     {
       icon: Heart,
       title: t('azkar'),
-      description: "Daily supplications and remembrance",
+      description: t('azkarDescription'),
       route: "/azkar",
       gradient: "bg-gradient-islamic",
       iconColor: "text-primary-foreground"
@@ -68,7 +68,7 @@ const Index = () => {
     {
       icon: MapPin,
       title: t('mosques'),
-      description: "Find mosques in your area",
+      description: t('mosquesDescription'),
       route: "/mosques",
       gradient: "bg-gradient-crescent",
       iconColor: "text-secondary-foreground"
