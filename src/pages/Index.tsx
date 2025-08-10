@@ -12,10 +12,13 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageToggle from '@/components/LanguageToggle';
 import mosqueHero from '@/assets/mosque-hero.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const [currentTime] = useState(new Date());
 
   // Format current date in both Gregorian and Hijri
@@ -32,7 +35,7 @@ const Index = () => {
   const navigationCards = [
     {
       icon: BookOpen,
-      title: "Holy Quran",
+      title: t('quran'),
       description: "Read the complete Quran with translation",
       route: "/quran",
       gradient: "bg-gradient-primary",
@@ -40,7 +43,7 @@ const Index = () => {
     },
     {
       icon: Clock,
-      title: "Prayer Times",
+      title: t('prayerTimes'),
       description: "Accurate prayer timings for your location",
       route: "/prayer-times",
       gradient: "bg-gradient-mosque",
@@ -48,7 +51,7 @@ const Index = () => {
     },
     {
       icon: Compass,
-      title: "Qibla Direction",
+      title: t('qibla'),
       description: "Find the direction to Mecca",
       route: "/qibla",
       gradient: "bg-gradient-secondary",
@@ -56,7 +59,7 @@ const Index = () => {
     },
     {
       icon: Heart,
-      title: "Azkar & Duas",
+      title: t('azkar'),
       description: "Daily supplications and remembrance",
       route: "/azkar",
       gradient: "bg-gradient-islamic",
@@ -64,7 +67,7 @@ const Index = () => {
     },
     {
       icon: MapPin,
-      title: "Nearby Mosques",
+      title: t('mosques'),
       description: "Find mosques in your area",
       route: "/mosques",
       gradient: "bg-gradient-crescent",
@@ -85,15 +88,18 @@ const Index = () => {
           style={{ backgroundImage: `url(${mosqueHero})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/70 to-primary/50"></div>
+          <div className="absolute top-4 right-4 z-20">
+            <LanguageToggle />
+          </div>
           <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
             <div className="mb-4">
               <Moon className="w-16 h-16 text-secondary crescent-animation mx-auto mb-2" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-              Al-Mu'min
+              {t('appName')}
             </h1>
             <p className="text-lg text-white/90 mb-6 max-w-md">
-              Your Complete Islamic Companion
+              {t('appSubtitle')}
             </p>
             <div className="flex items-center gap-4 text-white/80 text-sm">
               <div className="flex items-center gap-1">
@@ -113,13 +119,13 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Today • {currentTime.toLocaleTimeString('en-US', { 
+              {t('today')} • {currentTime.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
               })}
             </div>
             <div className="text-sm text-primary font-medium">
-              Next Prayer: Maghrib in 2h 34m
+              {t('nextPrayer')}: {t('maghrib')} in 2h 34m
             </div>
           </div>
         </div>
@@ -129,7 +135,7 @@ const Index = () => {
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8 islamic-heading">
-            Explore Islamic Features
+            {t('exploreFeatures')}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -158,7 +164,7 @@ const Index = () => {
           {/* Quick Access Section */}
           <div className="mt-12 bg-accent/50 rounded-2xl p-6 text-center">
             <h3 className="text-xl font-semibold mb-4 text-accent-foreground">
-              Quick Access
+              {t('quickAccess')}
             </h3>
             <div className="flex flex-wrap justify-center gap-3">
               <Button 
@@ -168,7 +174,7 @@ const Index = () => {
                 className="btn-prayer"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Read Quran
+                {t('readQuran')}
               </Button>
               <Button 
                 variant="secondary" 
@@ -177,7 +183,7 @@ const Index = () => {
                 className="btn-prayer"
               >
                 <Compass className="w-4 h-4 mr-2" />
-                Find Qibla
+                {t('findQibla')}
               </Button>
               <Button 
                 variant="secondary" 
@@ -186,7 +192,7 @@ const Index = () => {
                 className="btn-prayer"
               >
                 <Heart className="w-4 h-4 mr-2" />
-                Morning Azkar
+                {t('morningAzkar')}
               </Button>
             </div>
           </div>
