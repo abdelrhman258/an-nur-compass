@@ -1,172 +1,200 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Clock, Compass, Scroll, MapPin, Mosque } from 'lucide-react';
+import { 
+  BookOpen, 
+  Clock, 
+  Compass, 
+  Heart, 
+  MapPin,
+  Moon,
+  Sun,
+  Calendar
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import LanguageToggle from '@/components/LanguageToggle';
-import { useLanguage } from '@/contexts/LanguageContext';
-import heroImage from '@/assets/mosque-hero.jpg';
-import appIcon from '@/assets/app-icon.png';
+import { Button } from '@/components/ui/button';
+import mosqueHero from '@/assets/mosque-hero.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { language, t } = useLanguage();
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [hijriDate, setHijriDate] = useState("1446/02/05");
+  const [currentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000);
+  // Format current date in both Gregorian and Hijri
+  const gregorianDate = currentTime.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
-    // Simulate Hijri date calculation
-    const hijriMonths = [
-      'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الثانية',
-      'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
-    ];
-    const hijriMonth = hijriMonths[Math.floor(Math.random() * 12)];
-    setHijriDate(`${Math.floor(Math.random() * 28) + 1} ${hijriMonth} 1446`);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Simplified Hijri date (in a real app, use a proper Hijri calendar library)
+  const hijriDate = "15 Jumada al-Thani 1446";
 
   const navigationCards = [
     {
-      title: language === 'en' ? 'Holy Quran' : 'القرآن الكريم',
       icon: BookOpen,
-      path: '/quran',
-      gradient: 'bg-gradient-islamic',
-      description: language === 'en' ? 'Read the complete Quran with translation' : 'اقرأ القرآن الكريم كاملاً مع الترجمة'
+      title: "Holy Quran",
+      description: "Read the complete Quran with translation",
+      route: "/quran",
+      gradient: "bg-gradient-primary",
+      iconColor: "text-primary-foreground"
     },
     {
-      title: language === 'en' ? 'Prayer Times' : 'أوقات الصلاة',
       icon: Clock,
-      path: '/prayer-times',
-      gradient: 'bg-gradient-mosque',
-      description: language === 'en' ? 'Daily prayer schedules & notifications' : 'مواقيت الصلاة اليومية والتنبيهات'
+      title: "Prayer Times",
+      description: "Accurate prayer timings for your location",
+      route: "/prayer-times",
+      gradient: "bg-gradient-mosque",
+      iconColor: "text-primary-foreground"
     },
     {
-      title: language === 'en' ? 'Qibla Direction' : 'اتجاه القبلة',
       icon: Compass,
-      path: '/qibla',
-      gradient: 'bg-gradient-primary',
-      description: language === 'en' ? 'Find the correct direction to Mecca' : 'اعثر على الاتجاه الصحيح إلى مكة'
+      title: "Qibla Direction",
+      description: "Find the direction to Mecca",
+      route: "/qibla",
+      gradient: "bg-gradient-secondary",
+      iconColor: "text-secondary-foreground"
     },
     {
-      title: language === 'en' ? 'Azkar & Duas' : 'الأذكار والأدعية',
-      icon: Scroll,
-      path: '/azkar',
-      gradient: 'bg-gradient-secondary',
-      description: language === 'en' ? 'Daily remembrance and supplications' : 'الأذكار والأدعية اليومية'
+      icon: Heart,
+      title: "Azkar & Duas",
+      description: "Daily supplications and remembrance",
+      route: "/azkar",
+      gradient: "bg-gradient-islamic",
+      iconColor: "text-primary-foreground"
     },
     {
-      title: language === 'en' ? 'Nearby Mosques' : 'المساجد القريبة',
       icon: MapPin,
-      path: '/mosques',
-      gradient: 'bg-gradient-crescent',
-      description: language === 'en' ? 'Find mosques in your area' : 'اعثر على المساجد في منطقتك'
+      title: "Nearby Mosques",
+      description: "Find mosques in your area",
+      route: "/mosques",
+      gradient: "bg-gradient-crescent",
+      iconColor: "text-secondary-foreground"
     }
   ];
 
-  const nextPrayerTime = "3:45 PM";
-  const nextPrayerName = language === 'en' ? 'Asr' : 'العصر';
+  const handleNavigation = (route: string) => {
+    navigate(route);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Hero */}
-      <div 
-        className="relative bg-gradient-islamic text-primary-foreground bg-cover bg-center"
-        style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url(${heroImage})` }}
-      >
-        <div className="absolute inset-0 pattern-islamic opacity-10"></div>
-        <div className="relative px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <img src={appIcon} alt="Al-Mu'min" className="w-12 h-12 rounded-xl" />
-              <div>
-                <h1 className="text-2xl font-bold">{t('appTitle')}</h1>
-                <p className="text-primary-foreground/80 text-sm">{t('appSubtitle')}</p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div 
+          className="h-80 bg-cover bg-center relative"
+          style={{ backgroundImage: `url(${mosqueHero})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/70 to-primary/50"></div>
+          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
+            <div className="mb-4">
+              <Moon className="w-16 h-16 text-secondary crescent-animation mx-auto mb-2" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+              Al-Mu'min
+            </h1>
+            <p className="text-lg text-white/90 mb-6 max-w-md">
+              Your Complete Islamic Companion
+            </p>
+            <div className="flex items-center gap-4 text-white/80 text-sm">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                <span>{gregorianDate}</span>
               </div>
             </div>
-            <LanguageToggle />
-          </div>
-
-          {/* Date & Time */}
-          <div className="text-center mb-8">
-            <div className="text-3xl font-bold mb-2">
-              {currentDate.toLocaleTimeString(language === 'en' ? 'en-US' : 'ar-SA', { 
-                hour: '2-digit', 
-                minute: '2-digit'
-              })}
-            </div>
-            <div className="text-primary-foreground/90 text-sm mb-4">
-              {currentDate.toLocaleDateString(language === 'en' ? 'en-US' : 'ar-SA', { 
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-              })}
-            </div>
-            <div className="flex items-center justify-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-primary-foreground/70">{t('hijriDate')}:</span>
-                <span className="font-medium arabic-text">{hijriDate}</span>
-              </div>
+            <div className="text-white/80 text-sm mt-1 arabic-text">
+              {hijriDate}
             </div>
           </div>
-
-          {/* Next Prayer */}
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-primary-foreground">
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-primary-foreground/80 mb-1">{t('nextPrayer')}</p>
-              <div className="flex items-center justify-center gap-3 text-lg font-semibold">
-                <Mosque className="w-5 h-5" />
-                <span className={language === 'ar' ? 'arabic-text' : ''}>{nextPrayerName}</span>
-                <span>{nextPrayerTime}</span>
-              </div>
-              <p className="text-xs text-primary-foreground/70 mt-1">in 2h 34m</p>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
-      {/* Navigation Cards */}
+      {/* Date Section */}
+      <div className="px-6 py-4 bg-card border-b border-border">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Today • {currentTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </div>
+            <div className="text-sm text-primary font-medium">
+              Next Prayer: Maghrib in 2h 34m
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
       <div className="px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8 islamic-heading">
-            {language === 'en' ? 'Islamic Tools & Resources' : 'الأدوات والموارد الإسلامية'}
+            Explore Islamic Features
           </h2>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {navigationCards.map((card, index) => (
               <Card 
                 key={index}
-                className="prayer-card cursor-pointer group bg-card border border-border/50 hover:shadow-prayer"
-                onClick={() => navigate(card.path)}
+                className={`prayer-card cursor-pointer group ${card.gradient} border-0`}
+                onClick={() => handleNavigation(card.route)}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`w-16 h-16 rounded-2xl ${card.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <card.icon className="w-8 h-8 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <h3 className={`font-semibold text-lg mb-2 ${language === 'ar' ? 'arabic-text text-right' : ''}`}>
-                        {card.title}
-                      </h3>
-                      <p className={`text-sm text-muted-foreground ${language === 'ar' ? 'arabic-text text-right' : ''}`}>
-                        {card.description}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {language === 'en' ? 'Tap to open' : 'اضغط للفتح'}
-                    </Badge>
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4">
+                    <card.icon className={`w-12 h-12 mx-auto ${card.iconColor} group-hover:scale-110 transition-transform duration-300`} />
                   </div>
+                  <h3 className={`text-xl font-semibold mb-2 ${card.iconColor}`}>
+                    {card.title}
+                  </h3>
+                  <p className={`text-sm opacity-90 ${card.iconColor}`}>
+                    {card.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          {/* Quick Access Section */}
+          <div className="mt-12 bg-accent/50 rounded-2xl p-6 text-center">
+            <h3 className="text-xl font-semibold mb-4 text-accent-foreground">
+              Quick Access
+            </h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => handleNavigation('/quran')}
+                className="btn-prayer"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Read Quran
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => handleNavigation('/qibla')}
+                className="btn-prayer"
+              >
+                <Compass className="w-4 h-4 mr-2" />
+                Find Qibla
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => handleNavigation('/azkar')}
+                className="btn-prayer"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Morning Azkar
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Islamic Pattern Background */}
+      <div className="fixed inset-0 pattern-islamic opacity-5 pointer-events-none"></div>
     </div>
   );
 };
