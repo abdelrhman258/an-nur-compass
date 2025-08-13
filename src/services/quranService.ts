@@ -80,6 +80,11 @@ class CompliantQuranAPI {
 
   // ✅ OFFLINE STORAGE (REQUIRED BY GOOGLE & APPLE)
   async initOfflineStorage() {
+    if (!('indexedDB' in window)) {
+      console.warn('IndexedDB not supported');
+      return;
+    }
+
     try {
       const request = indexedDB.open('QuranOfflineDB', 1);
       
@@ -129,17 +134,8 @@ class CompliantQuranAPI {
   cleanBismillah(text: string): string {
     if (!text || typeof text !== 'string') return '';
     
-    let cleaned = text.trim();
-    
-    // Remove Bismillah patterns
-    cleaned = cleaned.replace('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ', '');
-    cleaned = cleaned.replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '');
-    cleaned = cleaned.replace('بسم الله الرحمن الرحيم', '');
-    
-    // Clean extra spaces
-    cleaned = cleaned.replace(/\s+/g, ' ').trim();
-    
-    return cleaned;
+    const bismillahPattern = /(?:﴿\s*)?بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ(?:\s*﴾)?/g;
+    return text.replace(bismillahPattern, '').replace(/\s+/g, ' ').trim();
   }
 
   // ✅ SAFE CACHE MANAGEMENT
@@ -153,9 +149,13 @@ class CompliantQuranAPI {
   }
 
   setCached(key: string, data: any) {
-    this.manageCacheSize();
-    this.cache.set(key, data);
-    this.cacheOrder.push(key);
+    try {
+      this.manageCacheSize();
+      this.cache.set(key, data);
+      this.cacheOrder.push(key);
+    } catch (error) {
+      console.warn('Cache operation failed:', error);
+    }
   }
 
   getCached(key: string) {
@@ -173,13 +173,15 @@ class CompliantQuranAPI {
   // ✅ NETWORK REQUESTS WITH TIMEOUT
   async fetchWithTimeout(url: string, timeoutMs = 8000): Promise<any> {
     return new Promise((resolve, reject) => {
+      const controller = new AbortController();
       const timeoutId = setTimeout(() => {
+        controller.abort();
         reject(new Error('Request timeout'));
       }, timeoutMs);
 
       fetch(url, {
         headers: { 'Accept': 'application/json' },
-        signal: AbortSignal.timeout(timeoutMs)
+        signal: controller.signal
       })
       .then(response => {
         clearTimeout(timeoutId);
@@ -244,10 +246,12 @@ class CompliantQuranAPI {
       // Try online APIs
       let surahData;
       try {
-        const [arabicData, englishData] = await Promise.all([
+        const results = await Promise.allSettled([
           this.fetchFromAlQuran(validNumber),
           this.fetchFromAlQuranEnglish(validNumber)
         ]);
+        const arabicData = results[0].status === 'fulfilled' ? results[0].value : null;
+        const englishData = results[1].status === 'fulfilled' ? results[1].value : null;
         surahData = { arabic: arabicData, english: englishData };
       } catch (error) {
         console.warn('⚠️ Primary API failed, trying backup...');
