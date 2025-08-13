@@ -134,8 +134,21 @@ class CompliantQuranAPI {
   cleanBismillah(text: string): string {
     if (!text || typeof text !== 'string') return '';
     
-    const bismillahPattern = /(?:﴿\s*)?بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ(?:\s*﴾)?/g;
-    return text.replace(bismillahPattern, '').replace(/\s+/g, ' ').trim();
+    let cleaned = text.trim();
+    
+    // Remove ALL Bismillah variations with regex
+    const bismillahPatterns = [
+      /بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ/g,
+      /بسم\s*الله\s*الرحمن\s*الرحيم/g,
+      /﴿\s*بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ\s*﴾/g,
+      /^[\s]*بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ[\s]*/
+    ];
+    
+    bismillahPatterns.forEach(pattern => {
+      cleaned = cleaned.replace(pattern, '');
+    });
+    
+    return cleaned.replace(/\s+/g, ' ').trim();
   }
 
   // ✅ SAFE CACHE MANAGEMENT
