@@ -37,10 +37,9 @@ export interface QuranResponse {
 
 class QuranService {
   private baseUrl = 'https://api.alquran.cloud/v1';
-  private uthmaniUrl = 'https://api.quran.com/api/v4'; // Verified Uthmani text
-  private tanzilUrl = 'https://tanzil.net/api'; // Backup verification source
-  private arabicEdition = 'ar.alafasy';
-  private englishEdition = 'en.asad';
+  private uthmaniEdition = 'ar.quranuthmaniv2'; // Uthmani script
+  private arabicEdition = 'ar.alafasy'; // Arabic with recitation
+  private englishEdition = 'en.asad'; // English translation
   private cache = new Map<string, any>();
   private readonly BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
   private verificationErrors = new Set<string>();
@@ -75,41 +74,38 @@ class QuranService {
     }
 
     try {
-      // Fetch verified Uthmani text
-      const uthmaniResponse = await fetch(`${this.uthmaniUrl}/chapters/${surahNumber}/verses?text_type=uthmani&words=false&translations=false`);
-      
-      if (!uthmaniResponse.ok) {
-        throw new Error('Failed to fetch verified Uthmani text');
-      }
+      // Fetch Uthmani text and English translation
+      const [uthmaniResponse, englishResponse] = await Promise.all([
+        fetch(`${this.baseUrl}/surah/${surahNumber}/${this.uthmaniEdition}`),
+        fetch(`${this.baseUrl}/surah/${surahNumber}/${this.englishEdition}`)
+      ]);
 
-      const uthmaniData = await uthmaniResponse.json();
+      const uthmaniData: QuranResponse = await uthmaniResponse.json();
+      const englishData: QuranResponse = await englishResponse.json();
       
-      // Verify the text integrity
-      const isVerified = await this.verifyTextIntegrity(surahNumber, uthmaniData);
-      if (!isVerified) {
-        this.verificationErrors.add(`surah-${surahNumber}`);
-        throw new Error('Quran text unavailable — verification failed');
-      }
+      if (uthmaniData.code === 200 && englishData.code === 200 && 
+          !Array.isArray(uthmaniData.data) && !Array.isArray(englishData.data)) {
+        
+        // Verify the text integrity
+        const isVerified = this.verifyTextIntegrity(uthmaniData.data, surahNumber);
+        if (!isVerified) {
+          this.verificationErrors.add(`surah-${surahNumber}`);
+          throw new Error('Quran text unavailable — verification failed');
+        }
 
-      // Process according to Madani Mushaf rules
-      const arabicData = this.processMadaniMushaf(uthmaniData, surahNumber);
-      
-      // Get English translation separately
-      const englishResponse = await fetch(`${this.baseUrl}/surah/${surahNumber}/${this.englishEdition}`);
-      const englishResponseData: QuranResponse = await englishResponse.json();
-      
-      if (englishResponseData.code === 200 && !Array.isArray(englishResponseData.data)) {
-        const englishData = this.processEnglishTranslation(englishResponseData.data, surahNumber);
+        // Process according to Madani Mushaf rules
+        const arabicData = this.processMadaniMushaf(uthmaniData.data, surahNumber);
+        const englishDataProcessed = this.processEnglishTranslation(englishData.data, surahNumber);
         
         const result = {
           arabic: arabicData,
-          english: englishData
+          english: englishDataProcessed
         };
         
         this.cache.set(cacheKey, result);
         return result;
       }
-      throw new Error(`Failed to fetch translation for Surah ${surahNumber}`);
+      throw new Error(`Failed to fetch Surah ${surahNumber}`);
     } catch (error) {
       console.error(`Error fetching Surah ${surahNumber}:`, error);
       if (error.message.includes('verification failed')) {
@@ -119,32 +115,23 @@ class QuranService {
     }
   }
 
-  // Verify text integrity against multiple sources
-  private async verifyTextIntegrity(surahNumber: number, uthmaniData: any): Promise<boolean> {
+  // Verify text integrity against expected standards
+  private verifyTextIntegrity(surah: QuranSurah, surahNumber: number): boolean {
     try {
       // Basic structure verification
-      if (!uthmaniData?.verses || !Array.isArray(uthmaniData.verses)) {
+      if (!surah?.ayahs || !Array.isArray(surah.ayahs) || surah.ayahs.length === 0) {
         return false;
       }
 
-      // Verify verse count matches expected count
-      const expectedVerseCounts = [7, 286, 200, 176, 120]; // Al-Fatiha, Al-Baqarah, etc.
-      if (surahNumber <= expectedVerseCounts.length) {
-        const expectedCount = expectedVerseCounts[surahNumber - 1];
-        if (uthmaniData.verses.length !== expectedCount) {
-          console.warn(`Verse count mismatch for Surah ${surahNumber}: expected ${expectedCount}, got ${uthmaniData.verses.length}`);
-        }
-      }
-
-      // Verify each verse has required fields and valid Arabic text
-      for (const verse of uthmaniData.verses) {
-        if (!verse.text_uthmani || typeof verse.text_uthmani !== 'string') {
+      // Verify each verse has valid Arabic text
+      for (const verse of surah.ayahs) {
+        if (!verse.text || typeof verse.text !== 'string') {
           return false;
         }
         
         // Check for Arabic script
         const arabicRegex = /[\u0600-\u06FF]/;
-        if (!arabicRegex.test(verse.text_uthmani)) {
+        if (!arabicRegex.test(verse.text)) {
           return false;
         }
       }
@@ -157,7 +144,7 @@ class QuranService {
   }
 
   // Process according to exact Madani Mushaf rules
-  private processMadaniMushaf(uthmaniData: any, surahNumber: number): QuranSurah {
+  private processMadaniMushaf(surah: QuranSurah, surahNumber: number): QuranSurah {
     const verses: QuranVerse[] = [];
     
     // Special handling based on Madani Mushaf rules
@@ -175,34 +162,36 @@ class QuranService {
         sajda: false
       });
       
-      // Add remaining verses (2-7)
-      uthmaniData.verses.forEach((verse: any, index: number) => {
-        if (index > 0) { // Skip first verse as it's Bismillah
+      // Add remaining verses (2-7), cleaning any duplicate Bismillah
+      surah.ayahs.forEach((verse, index) => {
+        const cleanedText = this.cleanVerseText(verse.text);
+        if (cleanedText.trim()) {
           verses.push({
-            number: index + 1,
-            text: verse.text_uthmani,
-            numberInSurah: index + 1,
-            juz: verse.juz_number || 1,
-            manzil: verse.manzil_number || 1,
-            page: verse.page_number || 1,
-            ruku: verse.ruku_number || 1,
-            hizbQuarter: verse.hizb_quarter || 1,
+            number: index + 2,
+            text: cleanedText,
+            numberInSurah: index + 2,
+            juz: verse.juz || 1,
+            manzil: verse.manzil || 1,
+            page: verse.page || 1,
+            ruku: verse.ruku || 1,
+            hizbQuarter: verse.hizbQuarter || 1,
             sajda: verse.sajda || false
           });
         }
       });
     } else if (surahNumber === 9) {
       // At-Tawbah: No Bismillah at all
-      uthmaniData.verses.forEach((verse: any, index: number) => {
+      surah.ayahs.forEach((verse, index) => {
+        const cleanedText = this.cleanVerseText(verse.text);
         verses.push({
           number: index + 1,
-          text: verse.text_uthmani,
+          text: cleanedText,
           numberInSurah: index + 1,
-          juz: verse.juz_number || 1,
-          manzil: verse.manzil_number || 1,
-          page: verse.page_number || 1,
-          ruku: verse.ruku_number || 1,
-          hizbQuarter: verse.hizb_quarter || 1,
+          juz: verse.juz || 1,
+          manzil: verse.manzil || 1,
+          page: verse.page || 1,
+          ruku: verse.ruku || 1,
+          hizbQuarter: verse.hizbQuarter || 1,
           sajda: verse.sajda || false
         });
       });
@@ -221,19 +210,22 @@ class QuranService {
         sajda: false
       });
       
-      // Add numbered verses starting from 1
-      uthmaniData.verses.forEach((verse: any, index: number) => {
-        verses.push({
-          number: index + 1,
-          text: verse.text_uthmani,
-          numberInSurah: index + 1,
-          juz: verse.juz_number || 1,
-          manzil: verse.manzil_number || 1,
-          page: verse.page_number || 1,
-          ruku: verse.ruku_number || 1,
-          hizbQuarter: verse.hizb_quarter || 1,
-          sajda: verse.sajda || false
-        });
+      // Add numbered verses starting from 1, cleaning any duplicate Bismillah
+      surah.ayahs.forEach((verse, index) => {
+        const cleanedText = this.cleanVerseText(verse.text);
+        if (cleanedText.trim()) {
+          verses.push({
+            number: index + 1,
+            text: cleanedText,
+            numberInSurah: index + 1,
+            juz: verse.juz || 1,
+            manzil: verse.manzil || 1,
+            page: verse.page || 1,
+            ruku: verse.ruku || 1,
+            hizbQuarter: verse.hizbQuarter || 1,
+            sajda: verse.sajda || false
+          });
+        }
       });
     }
 
