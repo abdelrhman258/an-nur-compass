@@ -46,6 +46,16 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
     return text.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
   };
 
+  // Format time in 12-hour format with AM/PM
+  const formatTimeIn12Hour = (time24: string): string => {
+    const [hour24, minute] = time24.split(':').map(Number);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const period = hour24 >= 12 ? (language === 'ar' ? 'م' : 'PM') : (language === 'ar' ? 'ص' : 'AM');
+    
+    const timeStr = `${hour12}:${minute.toString().padStart(2, '0')} ${period}`;
+    return language === 'ar' ? toArabicNumerals(timeStr) : timeStr;
+  };
+
   // Calculate next prayer time and remaining time with seconds precision
   const calculateNextPrayer = () => {
     const now = new Date();
@@ -83,7 +93,7 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
       
       return {
         name: nextPrayer.name,
-        time: nextPrayer.time,
+        time: formatTimeIn12Hour(nextPrayer.time),
         remaining: toArabicNumerals(timeText)
       };
     }
@@ -99,7 +109,7 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
 
     return {
       name: nextPrayer.name,
-      time: nextPrayer.time,
+      time: formatTimeIn12Hour(nextPrayer.time),
       remaining: toArabicNumerals(timeText)
     };
   };
@@ -119,15 +129,15 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
   }, [language]);
 
   return (
-    <div className={`text-sm font-medium text-foreground ${className}`}>
+    <div className={`text-sm font-medium ${className}`}>
       <span className="text-muted-foreground">
         {language === 'ar' ? 'الصلاة التالية' : 'Next Prayer'}:{' '}
       </span>
       <span className="text-primary font-bold">
         {nextPrayerInfo.name}
       </span>
-      <span className="text-muted-foreground"> في </span>
-      <span className="text-foreground font-bold">
+      <span className="text-muted-foreground"> {language === 'ar' ? 'في' : 'in'} </span>
+      <span className="text-primary-dark font-bold text-base">
         {nextPrayerInfo.remaining}
       </span>
     </div>

@@ -66,8 +66,18 @@ class NotificationService {
       prayerTime.setDate(prayerTime.getDate() + 1);
     }
 
+    // Schedule 5-minute warning
+    const warningTime = new Date(prayerTime.getTime() - 5 * 60 * 1000); // 5 minutes before
+    if (warningTime > now) {
+      const msUntilWarning = warningTime.getTime() - now.getTime();
+      const warningTimeout = setTimeout(() => {
+        this.triggerPrePrayerWarning(prayerName);
+      }, msUntilWarning);
+      this.notificationIntervals.push(warningTimeout);
+    }
+
+    // Schedule main Adhan
     const msUntilPrayer = prayerTime.getTime() - now.getTime();
-    
     const timeout = setTimeout(() => {
       this.triggerAdhan(prayerName);
       // Reschedule for next day
@@ -75,6 +85,22 @@ class NotificationService {
     }, msUntilPrayer);
 
     this.notificationIntervals.push(timeout);
+  }
+
+  private async triggerPrePrayerWarning(prayerName: string): Promise<void> {
+    if (!this.settings.enabled) return;
+
+    console.log(`⏰ 5-minute warning for ${prayerName}`);
+
+    // Show browser notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(`استعد للصلاة`, {
+        body: `استعد للصلاة، صلاة ${this.getPrayerNameArabic(prayerName)} ستبدأ بعد ٥ دقائق`,
+        icon: '/favicon.ico',
+        tag: 'pre-prayer-warning',
+        requireInteraction: false
+      });
+    }
   }
 
   private async triggerAdhan(prayerName: string): Promise<void> {

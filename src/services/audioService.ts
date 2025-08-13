@@ -73,6 +73,12 @@ class AudioService {
       audioUrl: adhanSaadGhamdi
     },
     {
+      id: 'alafasy',
+      name: 'Sheikh Mishary Al-Afasy',
+      arabicName: 'الشيخ مشاري العفاسي',
+      audioUrl: adhanMisharyAlafasy
+    },
+    {
       id: 'naqshabandi',
       name: 'Sheikh Al-Naqshabandi',
       arabicName: 'الشيخ النقشبندي',

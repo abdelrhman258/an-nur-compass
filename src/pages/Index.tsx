@@ -15,18 +15,30 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
 import PrayerCountdown from '@/components/PrayerCountdown';
+import DynamicBackground from '@/components/DynamicBackground';
+import PrePrayerNotification from '@/components/PrePrayerNotification';
+import PrayerTrackingDialog from '@/components/PrayerTrackingDialog';
 import mosqueHero from '@/assets/mosque-hero.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [prayerTrackingDialog, setPrayerTrackingDialog] = useState({ 
+    isOpen: false, 
+    prayerName: '' 
+  });
 
   // Update time every minute for real-time display
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      const newTime = new Date();
+      setCurrentTime(newTime);
+      checkPrayerTime();
     }, 60000); // Update every minute
+
+    // Check immediately on mount
+    checkPrayerTime();
 
     return () => clearInterval(timer);
   }, []);
@@ -39,7 +51,7 @@ const Index = () => {
     return text.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
   };
 
-  // Format current date in both Gregorian and Hijri
+  // Format current date properly
   const gregorianDate = currentTime.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -47,8 +59,39 @@ const Index = () => {
     day: 'numeric'
   });
 
-  // Simplified Hijri date (in a real app, use a proper Hijri calendar library)
-  const hijriDate = language === 'ar' ? "١٥ جمادى الآخرة ١٤٤٦" : "15 Jumada al-Thani 1446";
+  // Check for prayer time triggers
+  const checkPrayerTime = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    const prayerTimes = [
+      { name: 'الفجر', hour: 5, minute: 12 },
+      { name: 'الظهر', hour: 12, minute: 34 },
+      { name: 'العصر', hour: 15, minute: 27 },
+      { name: 'المغرب', hour: 18, minute: 15 },
+      { name: 'العشاء', hour: 19, minute: 42 }
+    ];
+
+    for (const prayer of prayerTimes) {
+      if (currentHour === prayer.hour && currentMinute === prayer.minute) {
+        setPrayerTrackingDialog({
+          isOpen: true,
+          prayerName: prayer.name
+        });
+        break;
+      }
+    }
+  };
+
+  const handlePrayerCompleted = (completed: boolean) => {
+    // Store prayer completion status
+    const today = currentTime.toDateString();
+    const existing = JSON.parse(localStorage.getItem('prayerStatus') || '{}');
+    existing[today] = existing[today] || {};
+    existing[today][prayerTrackingDialog.prayerName] = completed;
+    localStorage.setItem('prayerStatus', JSON.stringify(existing));
+  };
 
   const navigationCards = [
     {
@@ -98,7 +141,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <DynamicBackground>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div 
@@ -125,9 +168,6 @@ const Index = () => {
                 <span>{gregorianDate}</span>
               </div>
             </div>
-            <div className="text-white/80 text-sm mt-1 arabic-text">
-              {hijriDate}
-            </div>
           </div>
         </div>
       </div>
@@ -139,7 +179,8 @@ const Index = () => {
             <div className="text-sm text-muted-foreground">
               {t('today')} • {toArabicNumerals(currentTime.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { 
                 hour: '2-digit', 
-                minute: '2-digit' 
+                minute: '2-digit',
+                hour12: true
               }))}
             </div>
             <PrayerCountdown />
@@ -217,7 +258,18 @@ const Index = () => {
 
       {/* Islamic Pattern Background */}
       <div className="fixed inset-0 pattern-islamic opacity-5 pointer-events-none"></div>
-    </div>
+      
+      {/* Notifications */}
+      <PrePrayerNotification />
+      
+      {/* Prayer Tracking Dialog */}
+      <PrayerTrackingDialog
+        isOpen={prayerTrackingDialog.isOpen}
+        onClose={() => setPrayerTrackingDialog({ ...prayerTrackingDialog, isOpen: false })}
+        prayerName={prayerTrackingDialog.prayerName}
+        onPrayerCompleted={handlePrayerCompleted}
+      />
+    </DynamicBackground>
   );
 };
 

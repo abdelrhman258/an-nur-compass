@@ -58,6 +58,24 @@ const PrayerTimes = () => {
     }
   };
 
+  // Format time in 12-hour format with AM/PM
+  const formatTimeIn12Hour = (time24: string): string => {
+    const [hour24, minute] = time24.split(':').map(Number);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const period = hour24 >= 12 ? (language === 'ar' ? 'م' : 'PM') : (language === 'ar' ? 'ص' : 'AM');
+    
+    const timeStr = `${hour12}:${minute.toString().padStart(2, '0')} ${period}`;
+    return language === 'ar' ? toArabicNumerals(timeStr) : timeStr;
+  };
+
+  // Convert to Arabic numerals if language is Arabic
+  const toArabicNumerals = (text: string): string => {
+    if (language !== 'ar') return text;
+    
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return text.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+  };
+
   // Prayer times data with Arabic and English names
   const prayerTimes = [
     { 
@@ -294,8 +312,8 @@ const PrayerTimes = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-primary">{prayer.time}</p>
+                       <div className="text-right">
+                         <p className="text-lg font-bold text-primary">{formatTimeIn12Hour(prayer.time)}</p>
                         <Badge 
                           variant={status === 'next' ? 'default' : 'outline'} 
                           className="text-xs"
