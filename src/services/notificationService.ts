@@ -92,7 +92,7 @@ class NotificationService {
       });
     }
 
-    // Play Adhan audio with better error handling
+    // Play Adhan audio with enhanced local file playback
     try {
       console.log(`🔊 Attempting to play Adhan: ${this.settings.adhanSound}`);
       
@@ -108,15 +108,15 @@ class NotificationService {
       await audioService.playAdhan(this.settings.adhanSound);
       console.log(`✅ Adhan played successfully for ${prayerName}`);
       
-      // Show success notification
+      // Show success notification in Arabic
       if ('Notification' in window && Notification.permission === 'granted') {
-        setTimeout(() => {
-          new Notification(`تم تشغيل الأذان بنجاح`, {
-            body: `أذان ${this.getPrayerNameArabic(prayerName)}`,
-            icon: '/favicon.ico',
-            tag: 'adhan-success'
-          });
-        }, 1000);
+        const selectedAdhan = audioService.getAdhanOptions().find(a => a.id === this.settings.adhanSound);
+        new Notification(`🔊 ${this.getPrayerNameArabic(prayerName)}`, {
+          body: `يُذاع الآن بصوت ${selectedAdhan?.arabicName || 'المؤذن'}`,
+          icon: '/favicon.ico',
+          tag: 'adhan-playing',
+          requireInteraction: false
+        });
       }
       
     } catch (error) {
@@ -124,8 +124,8 @@ class NotificationService {
       
       // Show detailed error notification in Arabic
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`تعذر تشغيل الأذان`, {
-          body: `فشل في تشغيل أذان ${this.getPrayerNameArabic(prayerName)}. تحقق من اتصال الإنترنت.`,
+        new Notification(`⚠️ تعذر تشغيل الأذان`, {
+          body: `فشل في تشغيل أذان ${this.getPrayerNameArabic(prayerName)}. سيتم المحاولة مرة أخرى.`,
           icon: '/favicon.ico',
           tag: 'adhan-error',
           requireInteraction: true
