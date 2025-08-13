@@ -328,11 +328,24 @@ const Quran = () => {
                             
                             <div className="text-center">
                               <p className="arabic-text leading-relaxed mb-4 text-xl md:text-2xl text-foreground">
-                                {/* Ensure first verse has Bismillah removed */}
-                                {verse.text && verse.text.trim() ? 
-                                  `${verse.text} ﴿${verse.numberInSurah}﴾` : 
-                                  `﴿${verse.numberInSurah}﴾`
-                                }
+                                {(() => {
+                                  let displayText = verse.text;
+                                  
+                                  // Extra cleaning for first verse specifically
+                                  if (verse.numberInSurah === 1) {
+                                    displayText = displayText
+                                      ?.replace(/بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ/g, '')
+                                      ?.replace(/بسم\s*الله\s*الرحمن\s*الرحيم/g, '')
+                                      ?.replace(/﴿\s*بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ\s*﴾/g, '')
+                                      ?.replace(/^[\s]*بِسْمِ\s*اللَّهِ\s*الرَّحْمَ[نٰ]ِ\s*الرَّحِيمِ[\s]*/, '')
+                                      ?.replace(/\s+/g, ' ')
+                                      ?.trim();
+                                  }
+                                  
+                                  return displayText && displayText.trim() ? 
+                                    `${displayText} ﴿${verse.numberInSurah}﴾` : 
+                                    `﴿${verse.numberInSurah}﴾`;
+                                })()}
                               </p>
                               <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
                             </div>
