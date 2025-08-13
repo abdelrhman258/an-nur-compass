@@ -98,54 +98,61 @@ const PrayerTimes = () => {
     }
   ];
 
-  // Calculate next prayer time and remaining time
+  // Calculate next prayer time and remaining time with seconds precision
   const calculateNextPrayer = () => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
-    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    const currentSecond = now.getSeconds();
+    const currentTimeInSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
 
-    // Convert prayer times to minutes and filter only prayer times (not sunrise)
-    const prayerTimesInMinutes = prayerTimes
+    // Convert prayer times to seconds and filter only prayer times (not sunrise)
+    const prayerTimesInSeconds = prayerTimes
       .filter(prayer => prayer.type !== 'sunrise')
       .map(prayer => {
         const [hour, minute] = prayer.time.split(':').map(Number);
         return {
           ...prayer,
-          timeInMinutes: hour * 60 + minute
+          timeInSeconds: hour * 3600 + minute * 60
         };
       });
 
     // Find next prayer
-    let nextPrayer = prayerTimesInMinutes.find(prayer => prayer.timeInMinutes > currentTimeInMinutes);
+    let nextPrayer = prayerTimesInSeconds.find(prayer => prayer.timeInSeconds > currentTimeInSeconds);
     
     // If no prayer found today, next prayer is Fajr tomorrow
     if (!nextPrayer) {
-      nextPrayer = prayerTimesInMinutes[0]; // Fajr
+      nextPrayer = prayerTimesInSeconds[0]; // Fajr
       // Calculate time until Fajr tomorrow
-      const minutesUntilMidnight = (24 * 60) - currentTimeInMinutes;
-      const minutesFromMidnightToFajr = nextPrayer.timeInMinutes;
-      const totalMinutesRemaining = minutesUntilMidnight + minutesFromMidnightToFajr;
+      const secondsUntilMidnight = (24 * 3600) - currentTimeInSeconds;
+      const secondsFromMidnightToFajr = nextPrayer.timeInSeconds;
+      const totalSecondsRemaining = secondsUntilMidnight + secondsFromMidnightToFajr;
       
-      const hoursRemaining = Math.floor(totalMinutesRemaining / 60);
-      const minutesRemaining = totalMinutesRemaining % 60;
+      const hoursRemaining = Math.floor(totalSecondsRemaining / 3600);
+      const minutesRemaining = Math.floor((totalSecondsRemaining % 3600) / 60);
+      const secondsRemainingFinal = totalSecondsRemaining % 60;
       
       return {
         name: nextPrayer.name,
         time: nextPrayer.time,
-        remaining: `${hoursRemaining}h ${minutesRemaining}m`
+        remaining: language === 'ar' ? 
+          `${hoursRemaining}س ${minutesRemaining}د ${secondsRemainingFinal}ث` :
+          `${hoursRemaining}h ${minutesRemaining}m ${secondsRemainingFinal}s`
       };
     }
 
     // Calculate remaining time for today's prayer
-    const minutesRemaining = nextPrayer.timeInMinutes - currentTimeInMinutes;
-    const hoursRemaining = Math.floor(minutesRemaining / 60);
-    const minutesRemainingFinal = minutesRemaining % 60;
+    const secondsRemaining = nextPrayer.timeInSeconds - currentTimeInSeconds;
+    const hoursRemaining = Math.floor(secondsRemaining / 3600);
+    const minutesRemainingFinal = Math.floor((secondsRemaining % 3600) / 60);
+    const secondsRemainingFinal = secondsRemaining % 60;
 
     return {
       name: nextPrayer.name,
       time: nextPrayer.time,
-      remaining: `${hoursRemaining}h ${minutesRemainingFinal}m`
+      remaining: language === 'ar' ? 
+        `${hoursRemaining}س ${minutesRemainingFinal}د ${secondsRemainingFinal}ث` :
+        `${hoursRemaining}h ${minutesRemainingFinal}m ${secondsRemainingFinal}s`
     };
   };
 
@@ -178,8 +185,8 @@ const PrayerTimes = () => {
     // Update immediately
     updateTimes();
     
-    // Update every minute
-    const timer = setInterval(updateTimes, 60000);
+    // Update every 10 seconds for responsive countdown
+    const timer = setInterval(updateTimes, 10000);
 
     // Simulate location detection
     setTimeout(() => {
@@ -255,7 +262,9 @@ const PrayerTimes = () => {
 
             <Card className="bg-gradient-secondary text-secondary-foreground border-0">
               <CardContent className="p-6 text-center">
-                <h3 className="text-lg font-semibold mb-2">{t('nextPrayerIn')}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {language === 'ar' ? 'الصلاة القادمة في' : t('nextPrayerIn')}
+                </h3>
                 <p className="text-2xl font-bold text-foreground">{nextPrayerInfo.remaining}</p>
                 <p className="text-sm opacity-90 mt-1 text-foreground/80">{nextPrayerInfo.name} - {nextPrayerInfo.time}</p>
               </CardContent>
@@ -357,11 +366,11 @@ const PrayerTimes = () => {
                 
                 <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg">
                   <span className="text-sm text-muted-foreground">
-                    تم اختيار: {audioService.getAdhanOptions().find(opt => opt.id === selectedAdhan)?.arabicName}
+                    {language === 'ar' ? 'تم اختيار:' : 'Selected:'} {audioService.getAdhanOptions().find(opt => opt.id === selectedAdhan)?.arabicName}
                   </span>
                   <Button variant="outline" size="sm" onClick={playAdhanPreview}>
                     <Volume2 className="w-4 h-4 mr-2" />
-                    {t('previewAdhan')}
+                    {language === 'ar' ? 'معاينة الأذان' : t('previewAdhan')}
                   </Button>
                 </div>
               </div>
