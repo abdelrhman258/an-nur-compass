@@ -328,7 +328,11 @@ const Quran = () => {
                             
                             <div className="text-center">
                               <p className="arabic-text leading-relaxed mb-4 text-xl md:text-2xl text-foreground">
-                                {verse.text} ﴿{verse.numberInSurah}﴾
+                                {/* Ensure first verse has Bismillah removed */}
+                                {verse.text && verse.text.trim() ? 
+                                  `${verse.text} ﴿${verse.numberInSurah}﴾` : 
+                                  `﴿${verse.numberInSurah}﴾`
+                                }
                               </p>
                               <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
                             </div>
