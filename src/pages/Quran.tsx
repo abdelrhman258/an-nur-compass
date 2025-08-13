@@ -295,43 +295,57 @@ const Quran = () => {
 
                   {/* Verses displayed according to exact Madani Mushaf standard */}
                   <div className="space-y-6">
-                    {currentSurahData.arabic.ayahs.map((verse: any) => (
-                      <Card key={`verse-${verse.number}`} className="bg-card border border-border/50">
-                        <CardContent className="p-6">
-                          <div className="space-y-4">
-                            {/* Only show verse number badge for numbered verses */}
-                            {verse.numberInSurah > 0 && (
-                              <div className="flex items-center justify-between mb-4">
-                                <Badge variant="outline" className="text-xs">
-                                  {t('verse')} {verse.numberInSurah}
-                                </Badge>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => bookmarkVerse(verse.numberInSurah)}
+                    {currentSurahData.arabic.ayahs.map((verse: any, index: number) => {
+                      const isBismillah = verse.number === 0;
+                      const isNumberedVerse = verse.number > 0;
+                      
+                      return (
+                        <Card 
+                          key={`verse-${verse.number}-${index}`} 
+                          className={`${
+                            isBismillah 
+                              ? 'bg-primary/5 border-primary/20' 
+                              : 'bg-card border-border/50'
+                          }`}
+                        >
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              {/* Only show controls for numbered verses */}
+                              {isNumberedVerse && (
+                                <div className="flex items-center justify-between mb-4">
+                                  <Badge variant="outline" className="text-xs">
+                                    {t('verse')} {verse.numberInSurah}
+                                  </Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => bookmarkVerse(verse.numberInSurah)}
+                                  >
+                                    <Bookmark className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              )}
+                              
+                              <div className="text-center">
+                                <p 
+                                  className={`arabic-text leading-relaxed mb-4 ${
+                                    isBismillah 
+                                      ? 'text-3xl md:text-4xl text-primary font-semibold' 
+                                      : 'text-xl md:text-2xl text-foreground'
+                                  }`}
                                 >
-                                  <Bookmark className="w-4 h-4" />
-                                </Button>
+                                  {/* CRITICAL: Show verse text exactly as received - NO modifications */}
+                                  {verse.text}
+                                  {/* CRITICAL: Only add verse number marker for numbered verses */}
+                                  {isNumberedVerse && ` ﴿${verse.numberInSurah}﴾`}
+                                </p>
+                                <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
                               </div>
-                            )}
-                            
-                            <div className="text-center">
-                              <p 
-                                className={`arabic-text leading-relaxed mb-4 ${
-                                  verse.numberInSurah === 0 || (verse.numberInSurah === 1 && selectedSurah === 1 && verse.text.includes('بِسْمِ اللَّهِ'))
-                                    ? 'text-2xl md:text-3xl text-accent font-semibold' 
-                                    : 'text-xl md:text-2xl text-primary'
-                                }`}
-                              >
-                                {verse.text}
-                                {verse.numberInSurah > 0 && ` ﴿${verse.numberInSurah}﴾`}
-                              </p>
-                              <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
               ) : null}

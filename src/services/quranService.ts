@@ -147,40 +147,8 @@ class QuranService {
   private processMadaniMushaf(surah: QuranSurah, surahNumber: number): QuranSurah {
     const verses: QuranVerse[] = [];
     
-    // Special handling based on Madani Mushaf rules
-    if (surahNumber === 1) {
-      // Al-Fatiha: Bismillah is verse 1
-      verses.push({
-        number: 1,
-        text: this.BISMILLAH,
-        numberInSurah: 1,
-        juz: 1,
-        manzil: 1,
-        page: 1,
-        ruku: 1,
-        hizbQuarter: 1,
-        sajda: false
-      });
-      
-      // Add remaining verses (2-7), cleaning any duplicate Bismillah
-      surah.ayahs.forEach((verse, index) => {
-        const cleanedText = this.cleanVerseText(verse.text);
-        if (cleanedText.trim()) {
-          verses.push({
-            number: index + 2,
-            text: cleanedText,
-            numberInSurah: index + 2,
-            juz: verse.juz || 1,
-            manzil: verse.manzil || 1,
-            page: verse.page || 1,
-            ruku: verse.ruku || 1,
-            hizbQuarter: verse.hizbQuarter || 1,
-            sajda: verse.sajda || false
-          });
-        }
-      });
-    } else if (surahNumber === 9) {
-      // At-Tawbah: No Bismillah at all
+    if (surahNumber === 9) {
+      // At-Tawbah: NO Bismillah at all, start directly with numbered verses
       surah.ayahs.forEach((verse, index) => {
         const cleanedText = this.cleanVerseText(verse.text);
         verses.push({
@@ -196,10 +164,9 @@ class QuranService {
         });
       });
     } else {
-      // All other surahs: Bismillah without verse number, then numbered verses start from 1
-      // First add Bismillah (unnumbered display item)
+      // All other 113 surahs: Bismillah as separate unnumbered header
       verses.push({
-        number: 0, // Special marker for unnumbered Bismillah
+        number: 0, // Special marker for unnumbered Bismillah header
         text: this.BISMILLAH,
         numberInSurah: 0,
         juz: 1,
@@ -244,31 +211,8 @@ class QuranService {
   private processEnglishTranslation(surah: QuranSurah, surahNumber: number): QuranSurah {
     const verses: QuranVerse[] = [];
     
-    if (surahNumber === 1) {
-      // Al-Fatiha: Bismillah is verse 1
-      verses.push({
-        number: 1,
-        text: "In the name of Allah, the Most Gracious, the Most Merciful.",
-        numberInSurah: 1,
-        juz: 1,
-        manzil: 1,
-        page: 1,
-        ruku: 1,
-        hizbQuarter: 1,
-        sajda: false
-      });
-      
-      // Add remaining verses
-      surah.ayahs.slice(1).forEach((verse, index) => {
-        verses.push({
-          ...verse,
-          number: index + 2,
-          numberInSurah: index + 2,
-          text: this.cleanVerseText(verse.text)
-        });
-      });
-    } else if (surahNumber === 9) {
-      // At-Tawbah: No Bismillah
+    if (surahNumber === 9) {
+      // At-Tawbah: No Bismillah at all
       surah.ayahs.forEach((verse, index) => {
         verses.push({
           ...verse,
@@ -278,7 +222,7 @@ class QuranService {
         });
       });
     } else {
-      // Other surahs: Bismillah unnumbered, then numbered verses
+      // All other surahs: Bismillah as unnumbered header
       verses.push({
         number: 0,
         text: "In the name of Allah, the Most Gracious, the Most Merciful.",
