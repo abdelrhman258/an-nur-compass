@@ -67,11 +67,24 @@ const Quran = () => {
     setCurrentVerse(1);
     
     try {
+      // Check for verification errors first
+      if (quranService.hasVerificationError(surahNumber)) {
+        throw new Error('Quran text unavailable — verification failed');
+      }
+      
       const surahData = await quranService.getSurah(surahNumber);
+      if (!surahData) {
+        throw new Error('Quran text unavailable — verification failed');
+      }
       setCurrentSurahData(surahData);
     } catch (error) {
       console.error('Error loading Surah:', error);
-      toast.error('فشل في تحميل السورة');
+      if (error.message.includes('verification failed')) {
+        toast.error('Quran text unavailable — verification failed');
+      } else {
+        toast.error('فشل في تحميل السورة');
+      }
+      setSelectedSurah(null); // Reset selection on error
     } finally {
       setSurahLoading(false);
     }
@@ -280,34 +293,38 @@ const Quran = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Verses - Madani Mushaf Standard: Bismillah included as verse 1 */}
+                  {/* Verses displayed according to exact Madani Mushaf standard */}
                   <div className="space-y-6">
-                    {currentSurahData.arabic.ayahs.map((verse: any, index: number) => (
-                      <Card key={verse.number} className="bg-card border border-border/50">
+                    {currentSurahData.arabic.ayahs.map((verse: any) => (
+                      <Card key={`verse-${verse.number}`} className="bg-card border border-border/50">
                         <CardContent className="p-6">
                           <div className="space-y-4">
-                            <div className="flex items-center justify-between mb-4">
-                              <Badge variant="outline" className="text-xs">
-                                {t('verse')} {verse.numberInSurah}
-                              </Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => bookmarkVerse(verse.numberInSurah)}
-                              >
-                                <Bookmark className="w-4 h-4" />
-                              </Button>
-                            </div>
+                            {/* Only show verse number badge for numbered verses */}
+                            {verse.numberInSurah > 0 && (
+                              <div className="flex items-center justify-between mb-4">
+                                <Badge variant="outline" className="text-xs">
+                                  {t('verse')} {verse.numberInSurah}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => bookmarkVerse(verse.numberInSurah)}
+                                >
+                                  <Bookmark className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            )}
                             
                             <div className="text-center">
                               <p 
                                 className={`arabic-text leading-relaxed mb-4 ${
-                                  verse.numberInSurah === 1 && selectedSurah !== 9 && verse.text.includes('بِسْمِ اللَّهِ') 
+                                  verse.numberInSurah === 0 || (verse.numberInSurah === 1 && selectedSurah === 1 && verse.text.includes('بِسْمِ اللَّهِ'))
                                     ? 'text-2xl md:text-3xl text-accent font-semibold' 
                                     : 'text-xl md:text-2xl text-primary'
                                 }`}
                               >
-                                {verse.text} ﴿{verse.numberInSurah}﴾
+                                {verse.text}
+                                {verse.numberInSurah > 0 && ` ﴿${verse.numberInSurah}﴾`}
                               </p>
                               <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
                             </div>
