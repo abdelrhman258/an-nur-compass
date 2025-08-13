@@ -20,6 +20,7 @@ const PrayerTimes = () => {
   const [location, setLocation] = useState("جارٍ تحديد الموقع...");
   const [selectedAdhan, setSelectedAdhan] = useState("makkah");
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [nextPrayerInfo, setNextPrayerInfo] = useState({ name: '', time: '', remaining: '' });
   
   useEffect(() => {
     // Load saved settings
@@ -97,11 +98,88 @@ const PrayerTimes = () => {
     }
   ];
 
+  // Calculate next prayer time and remaining time
+  const calculateNextPrayer = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+    // Convert prayer times to minutes and filter only prayer times (not sunrise)
+    const prayerTimesInMinutes = prayerTimes
+      .filter(prayer => prayer.type !== 'sunrise')
+      .map(prayer => {
+        const [hour, minute] = prayer.time.split(':').map(Number);
+        return {
+          ...prayer,
+          timeInMinutes: hour * 60 + minute
+        };
+      });
+
+    // Find next prayer
+    let nextPrayer = prayerTimesInMinutes.find(prayer => prayer.timeInMinutes > currentTimeInMinutes);
+    
+    // If no prayer found today, next prayer is Fajr tomorrow
+    if (!nextPrayer) {
+      nextPrayer = prayerTimesInMinutes[0]; // Fajr
+      // Calculate time until Fajr tomorrow
+      const minutesUntilMidnight = (24 * 60) - currentTimeInMinutes;
+      const minutesFromMidnightToFajr = nextPrayer.timeInMinutes;
+      const totalMinutesRemaining = minutesUntilMidnight + minutesFromMidnightToFajr;
+      
+      const hoursRemaining = Math.floor(totalMinutesRemaining / 60);
+      const minutesRemaining = totalMinutesRemaining % 60;
+      
+      return {
+        name: nextPrayer.name,
+        time: nextPrayer.time,
+        remaining: `${hoursRemaining}h ${minutesRemaining}m`
+      };
+    }
+
+    // Calculate remaining time for today's prayer
+    const minutesRemaining = nextPrayer.timeInMinutes - currentTimeInMinutes;
+    const hoursRemaining = Math.floor(minutesRemaining / 60);
+    const minutesRemainingFinal = minutesRemaining % 60;
+
+    return {
+      name: nextPrayer.name,
+      time: nextPrayer.time,
+      remaining: `${hoursRemaining}h ${minutesRemainingFinal}m`
+    };
+  };
+
+  // Get current prayer status
+  const getCurrentPrayerStatus = (prayerTime: string, prayerType: string) => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinute;
+    
+    const [hour, minute] = prayerTime.split(':').map(Number);
+    const prayerTimeInMinutes = hour * 60 + minute;
+    
+    if (prayerType === 'sunrise') {
+      return currentTimeInMinutes > prayerTimeInMinutes ? 'passed' : 'upcoming';
+    }
+    
+    const nextPrayerInfo = calculateNextPrayer();
+    return nextPrayerInfo.time === prayerTime ? 'next' : 
+           currentTimeInMinutes > prayerTimeInMinutes ? 'passed' : 'upcoming';
+  };
+
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateTimes = () => {
       setCurrentTime(new Date());
-    }, 60000); // Update every minute for real-time display
+      setNextPrayerInfo(calculateNextPrayer());
+    };
+    
+    // Update immediately
+    updateTimes();
+    
+    // Update every minute
+    const timer = setInterval(updateTimes, 60000);
 
     // Simulate location detection
     setTimeout(() => {
@@ -178,8 +256,8 @@ const PrayerTimes = () => {
             <Card className="bg-gradient-secondary text-secondary-foreground border-0">
               <CardContent className="p-6 text-center">
                 <h3 className="text-lg font-semibold mb-2">{t('nextPrayerIn')}</h3>
-                <p className="text-2xl font-bold text-secondary">2h 34m</p>
-                <p className="text-sm opacity-80 mt-1">{t('maghrib')} - 18:15</p>
+                <p className="text-2xl font-bold text-secondary">{nextPrayerInfo.remaining}</p>
+                <p className="text-sm opacity-80 mt-1">{nextPrayerInfo.name} - {nextPrayerInfo.time}</p>
               </CardContent>
             </Card>
           </div>
@@ -191,28 +269,38 @@ const PrayerTimes = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {prayerTimes.map((prayer, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center justify-between p-4 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl">{prayer.icon}</span>
-                      <div>
-                        <h4 className="font-semibold text-foreground">{prayer.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {prayer.type === 'sunrise' ? '' : (language === 'ar' ? 'صلاة' : 'Prayer')}
-                        </p>
+                {prayerTimes.map((prayer, index) => {
+                  const status = getCurrentPrayerStatus(prayer.time, prayer.type);
+                  return (
+                    <div 
+                      key={index} 
+                      className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
+                        status === 'next' ? 'bg-primary/20 border border-primary/30' : 'bg-accent/30 hover:bg-accent/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-2xl">{prayer.icon}</span>
+                        <div>
+                          <h4 className="font-semibold text-foreground">{prayer.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {prayer.type === 'sunrise' ? '' : (language === 'ar' ? 'صلاة' : 'Prayer')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-primary">{prayer.time}</p>
+                        <Badge 
+                          variant={status === 'next' ? 'default' : 'outline'} 
+                          className="text-xs"
+                        >
+                          {status === 'next' ? (language === 'ar' ? 'القادمة' : 'Next') : 
+                           status === 'passed' ? (language === 'ar' ? 'انتهت' : 'Done') : 
+                           (language === 'ar' ? 'قادمة' : 'Upcoming')}
+                        </Badge>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-primary">{prayer.time}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {index === 4 ? (language === 'ar' ? 'القادمة' : 'Next') : (language === 'ar' ? 'انتهت' : 'Done')}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

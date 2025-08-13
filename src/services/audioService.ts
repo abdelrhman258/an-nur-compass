@@ -4,6 +4,7 @@ import adhanMadinahImam from '@/assets/audio/adhan-madinah-imam.mp3';
 import adhanMohammedRifaat from '@/assets/audio/adhan-mohammed-rifaat.mp3';
 import adhanSaadGhamdi from '@/assets/audio/adhan-saad-ghamdi.mp3';
 import adhanMisharyAlafasy from '@/assets/audio/adhan-mishary-alafasy.mp3';
+import adhanNaqshabandi from '@/assets/audio/adhan-naqshabandi.mp3';
 
 export interface AudioReciter {
   id: string;
@@ -72,10 +73,10 @@ class AudioService {
       audioUrl: adhanSaadGhamdi
     },
     {
-      id: 'alafasy_adhan',
-      name: 'Sheikh Mishary Al-Afasy',
-      arabicName: 'الشيخ مشاري العفاسي',
-      audioUrl: adhanMisharyAlafasy
+      id: 'naqshabandi',
+      name: 'Sheikh Al-Naqshabandi',
+      arabicName: 'الشيخ النقشبندي',
+      audioUrl: adhanNaqshabandi
     }
   ];
 
