@@ -76,11 +76,10 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
       
       const hoursRemaining = Math.floor(totalSecondsRemaining / 3600);
       const minutesRemaining = Math.floor((totalSecondsRemaining % 3600) / 60);
-      const secondsRemainingFinal = totalSecondsRemaining % 60;
       
       const timeText = language === 'ar' ? 
-        `${hoursRemaining}س ${minutesRemaining}د ${secondsRemainingFinal}ث` :
-        `${hoursRemaining}h ${minutesRemaining}m ${secondsRemainingFinal}s`;
+        `${hoursRemaining}س ${minutesRemaining}د` :
+        `${hoursRemaining}h ${minutesRemaining}m`;
       
       return {
         name: nextPrayer.name,
@@ -93,11 +92,10 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
     const secondsRemaining = nextPrayer.timeInSeconds - currentTimeInSeconds;
     const hoursRemaining = Math.floor(secondsRemaining / 3600);
     const minutesRemainingFinal = Math.floor((secondsRemaining % 3600) / 60);
-    const secondsRemainingFinal = secondsRemaining % 60;
 
     const timeText = language === 'ar' ? 
-      `${hoursRemaining}س ${minutesRemainingFinal}د ${secondsRemainingFinal}ث` :
-      `${hoursRemaining}h ${minutesRemainingFinal}m ${secondsRemainingFinal}s`;
+      `${hoursRemaining}س ${minutesRemainingFinal}د` :
+      `${hoursRemaining}h ${minutesRemainingFinal}m`;
 
     return {
       name: nextPrayer.name,
@@ -114,8 +112,8 @@ const PrayerCountdown = ({ className = '' }: PrayerCountdownProps) => {
     // Update immediately
     updateTimes();
     
-    // Update every second for responsive countdown
-    const timer = setInterval(updateTimes, 1000);
+    // Update every minute for responsive countdown
+    const timer = setInterval(updateTimes, 60000);
 
     return () => clearInterval(timer);
   }, [language]);

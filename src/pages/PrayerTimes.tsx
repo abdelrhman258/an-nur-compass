@@ -130,14 +130,13 @@ const PrayerTimes = () => {
       
       const hoursRemaining = Math.floor(totalSecondsRemaining / 3600);
       const minutesRemaining = Math.floor((totalSecondsRemaining % 3600) / 60);
-      const secondsRemainingFinal = totalSecondsRemaining % 60;
       
       return {
         name: nextPrayer.name,
         time: nextPrayer.time,
         remaining: language === 'ar' ? 
-          `${hoursRemaining}س ${minutesRemaining}د ${secondsRemainingFinal}ث` :
-          `${hoursRemaining}h ${minutesRemaining}m ${secondsRemainingFinal}s`
+          `${hoursRemaining}س ${minutesRemaining}د` :
+          `${hoursRemaining}h ${minutesRemaining}m`
       };
     }
 
@@ -145,14 +144,13 @@ const PrayerTimes = () => {
     const secondsRemaining = nextPrayer.timeInSeconds - currentTimeInSeconds;
     const hoursRemaining = Math.floor(secondsRemaining / 3600);
     const minutesRemainingFinal = Math.floor((secondsRemaining % 3600) / 60);
-    const secondsRemainingFinal = secondsRemaining % 60;
 
     return {
       name: nextPrayer.name,
       time: nextPrayer.time,
       remaining: language === 'ar' ? 
-        `${hoursRemaining}س ${minutesRemainingFinal}د ${secondsRemainingFinal}ث` :
-        `${hoursRemaining}h ${minutesRemainingFinal}m ${secondsRemainingFinal}s`
+        `${hoursRemaining}س ${minutesRemainingFinal}د` :
+        `${hoursRemaining}h ${minutesRemainingFinal}m`
     };
   };
 
@@ -185,8 +183,8 @@ const PrayerTimes = () => {
     // Update immediately
     updateTimes();
     
-    // Update every 10 seconds for responsive countdown
-    const timer = setInterval(updateTimes, 10000);
+    // Update every minute for responsive countdown
+    const timer = setInterval(updateTimes, 60000);
 
     // Simulate location detection
     setTimeout(() => {
