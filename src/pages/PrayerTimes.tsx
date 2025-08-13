@@ -256,8 +256,8 @@ const PrayerTimes = () => {
             <Card className="bg-gradient-secondary text-secondary-foreground border-0">
               <CardContent className="p-6 text-center">
                 <h3 className="text-lg font-semibold mb-2">{t('nextPrayerIn')}</h3>
-                <p className="text-2xl font-bold text-secondary">{nextPrayerInfo.remaining}</p>
-                <p className="text-sm opacity-80 mt-1">{nextPrayerInfo.name} - {nextPrayerInfo.time}</p>
+                <p className="text-2xl font-bold text-foreground">{nextPrayerInfo.remaining}</p>
+                <p className="text-sm opacity-90 mt-1 text-foreground/80">{nextPrayerInfo.name} - {nextPrayerInfo.time}</p>
               </CardContent>
             </Card>
           </div>
