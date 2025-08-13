@@ -82,29 +82,53 @@ class NotificationService {
 
     console.log(`🕌 Triggering Adhan for ${prayerName} with sound: ${this.settings.adhanSound}`);
 
-    // Show browser notification
+    // Show browser notification first
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(`حان وقت صلاة ${this.getPrayerNameArabic(prayerName)}`, {
         body: 'حان الآن وقت الصلاة',
         icon: '/favicon.ico',
-        tag: 'adhan-notification'
+        tag: 'adhan-notification',
+        requireInteraction: true
       });
     }
 
-    // Play Adhan audio
+    // Play Adhan audio with better error handling
     try {
       console.log(`🔊 Attempting to play Adhan: ${this.settings.adhanSound}`);
+      
+      // Request audio focus for better playback
+      if ('navigator' in window && 'mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: `أذان ${this.getPrayerNameArabic(prayerName)}`,
+          artist: audioService.getAdhanOptions().find(a => a.id === this.settings.adhanSound)?.arabicName || '',
+          album: 'تطبيق الصلاة'
+        });
+      }
+      
       await audioService.playAdhan(this.settings.adhanSound);
       console.log(`✅ Adhan played successfully for ${prayerName}`);
+      
+      // Show success notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        setTimeout(() => {
+          new Notification(`تم تشغيل الأذان بنجاح`, {
+            body: `أذان ${this.getPrayerNameArabic(prayerName)}`,
+            icon: '/favicon.ico',
+            tag: 'adhan-success'
+          });
+        }, 1000);
+      }
+      
     } catch (error) {
       console.error(`❌ Failed to play Adhan for ${prayerName}:`, error);
       
-      // Show fallback notification in Arabic
+      // Show detailed error notification in Arabic
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(`فشل في تشغيل الأذان`, {
-          body: 'يرجى التحقق من إعدادات الصوت',
+        new Notification(`تعذر تشغيل الأذان`, {
+          body: `فشل في تشغيل أذان ${this.getPrayerNameArabic(prayerName)}. تحقق من اتصال الإنترنت.`,
           icon: '/favicon.ico',
-          tag: 'adhan-error'
+          tag: 'adhan-error',
+          requireInteraction: true
         });
       }
     }

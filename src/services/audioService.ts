@@ -39,37 +39,37 @@ class AudioService {
     }
   ];
 
-  // Adhan audio options with working URLs
+  // Adhan audio options with reliable working URLs
   private adhanOptions: AdhanReciter[] = [
     {
       id: 'makkah',
       name: 'Makkah Imam',
       arabicName: 'إمام الحرم المكي',
-      audioUrl: 'https://archive.org/download/adhan-masjid-al-haram/adhan-masjid-al-haram.mp3'
+      audioUrl: 'https://www.islamicfinder.org/prayer_service/sound/adhan/Makkah1.mp3'
     },
     {
       id: 'madinah',
       name: 'Madinah Imam', 
       arabicName: 'إمام الحرم المدني',
-      audioUrl: 'https://archive.org/download/adhan-masjid-nabawi/adhan-masjid-nabawi.mp3'
+      audioUrl: 'https://www.islamicfinder.org/prayer_service/sound/adhan/Madinah1.mp3'
     },
     {
       id: 'rifaat',
       name: 'Sheikh Mohammed Rifaat',
       arabicName: 'الشيخ محمد رفعت',
-      audioUrl: 'https://server8.mp3quran.net/afs/Adhan/001.mp3'
+      audioUrl: 'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanRifaat.mp3'
     },
     {
       id: 'ghamdi',
       name: 'Sheikh Saad Al-Ghamdi',
       arabicName: 'الشيخ سعد الغامدي',
-      audioUrl: 'https://server8.mp3quran.net/afs/Adhan/002.mp3'
+      audioUrl: 'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanGamidi.mp3'
     },
     {
       id: 'alafasy_adhan',
       name: 'Sheikh Mishary Al-Afasy',
       arabicName: 'الشيخ مشاري العفاسي',
-      audioUrl: 'https://server8.mp3quran.net/afs/Adhan/003.mp3'
+      audioUrl: 'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanMishariRashidAlafasy.mp3'
     }
   ];
 
@@ -129,83 +129,112 @@ class AudioService {
     }
   }
 
-  // Play Adhan with better error handling and fallback
+  // Play Adhan with enhanced error handling and multiple fallback sources
   async playAdhan(adhanId: string = 'makkah'): Promise<void> {
-    try {
-      if (this.currentAudio) {
-        this.currentAudio.pause();
-        this.currentAudio = null;
-      }
+    const adhanOption = this.adhanOptions.find(a => a.id === adhanId) || this.adhanOptions[0];
+    
+    // Alternative backup URLs for each reciter
+    const backupUrls: { [key: string]: string[] } = {
+      makkah: [
+        'https://www.islamicfinder.org/prayer_service/sound/adhan/Makkah1.mp3',
+        'https://archive.org/download/adhan-masjid-al-haram/adhan-masjid-al-haram.mp3',
+        'https://www.mp3quran.net/api/v3/media/audio/1'
+      ],
+      madinah: [
+        'https://www.islamicfinder.org/prayer_service/sound/adhan/Madinah1.mp3',
+        'https://archive.org/download/adhan-masjid-nabawi/adhan-masjid-nabawi.mp3'
+      ],
+      rifaat: [
+        'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanRifaat.mp3',
+        'https://archive.org/download/AdhanRifaat/AdhanRifaat.mp3'
+      ],
+      ghamdi: [
+        'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanGamidi.mp3'
+      ],
+      alafasy_adhan: [
+        'https://www.islamicfinder.org/prayer_service/sound/adhan/AdhanMishariRashidAlafasy.mp3'
+      ]
+    };
 
-      const adhanOption = this.adhanOptions.find(a => a.id === adhanId) || this.adhanOptions[0];
-      console.log(`🔊 Playing Adhan: ${adhanOption.name} - ${adhanOption.audioUrl}`);
-      
-      this.currentAudio = new Audio();
-      this.currentAudio.crossOrigin = 'anonymous';
-      this.currentAudio.preload = 'auto';
-      
-      // Add event listeners before setting src
-      this.currentAudio.addEventListener('loadstart', () => {
-        console.log('🔄 Loading Adhan audio...');
-      });
+    const urlsToTry = [adhanOption.audioUrl, ...(backupUrls[adhanId] || [])];
 
-      this.currentAudio.addEventListener('canplaythrough', () => {
-        console.log('✅ Adhan audio ready to play');
-      });
-
-      this.currentAudio.addEventListener('error', (e) => {
-        console.error('❌ Adhan audio error:', e);
-        console.error('Failed URL:', adhanOption.audioUrl);
-      });
-
-      this.currentAudio.addEventListener('ended', () => {
-        console.log('🎵 Adhan finished playing');
-        this.isPlaying = false;
-      });
-
-      // Set source and load
-      this.currentAudio.src = adhanOption.audioUrl;
-      this.currentAudio.load();
-
-      // Wait for audio to be ready, then play
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Audio loading timeout'));
-        }, 10000); // 10 second timeout
-
-        this.currentAudio!.addEventListener('canplaythrough', () => {
-          clearTimeout(timeout);
-          resolve(void 0);
-        }, { once: true });
-
-        this.currentAudio!.addEventListener('error', () => {
-          clearTimeout(timeout);
-          reject(new Error(`Failed to load Adhan: ${adhanOption.audioUrl}`));
-        }, { once: true });
-      });
-
-      await this.currentAudio.play();
-      this.isPlaying = true;
-      console.log('✅ Adhan started playing successfully');
-      
-    } catch (error) {
-      console.error('❌ Error playing Adhan:', error);
-      
-      // Try fallback with local notification sound if available
+    for (const audioUrl of urlsToTry) {
       try {
-        if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance('أذان - حان وقت الصلاة');
-          utterance.lang = 'ar-SA';
-          utterance.rate = 0.8;
-          speechSynthesis.speak(utterance);
-          console.log('🔊 Fallback: Using speech synthesis for Adhan notification');
+        if (this.currentAudio) {
+          this.currentAudio.pause();
+          this.currentAudio = null;
         }
-      } catch (fallbackError) {
-        console.error('❌ Fallback also failed:', fallbackError);
+
+        console.log(`🔊 Trying Adhan URL: ${audioUrl}`);
+        
+        this.currentAudio = new Audio();
+        this.currentAudio.volume = 0.8;
+        this.currentAudio.preload = 'auto';
+        
+        // Set source
+        this.currentAudio.src = audioUrl;
+
+        // Wait for audio to load with timeout
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Loading timeout'));
+          }, 8000);
+
+          const onCanPlay = () => {
+            clearTimeout(timeout);
+            this.currentAudio!.removeEventListener('canplaythrough', onCanPlay);
+            this.currentAudio!.removeEventListener('error', onError);
+            resolve(void 0);
+          };
+
+          const onError = () => {
+            clearTimeout(timeout);
+            this.currentAudio!.removeEventListener('canplaythrough', onCanPlay);
+            this.currentAudio!.removeEventListener('error', onError);
+            reject(new Error('Audio loading failed'));
+          };
+
+          this.currentAudio!.addEventListener('canplaythrough', onCanPlay);
+          this.currentAudio!.addEventListener('error', onError);
+        });
+
+        // Try to play
+        await this.currentAudio.play();
+        this.isPlaying = true;
+        
+        console.log(`✅ Adhan playing successfully: ${adhanOption.arabicName}`);
+        
+        // Add ended listener
+        this.currentAudio.addEventListener('ended', () => {
+          this.isPlaying = false;
+          console.log('🎵 Adhan finished');
+        });
+        
+        return; // Success, exit function
+        
+      } catch (error) {
+        console.warn(`❌ Failed URL: ${audioUrl}`, error);
+        continue; // Try next URL
       }
-      
-      throw error;
     }
+
+    // If all URLs failed, use fallback
+    console.error('❌ All Adhan URLs failed, using speech fallback');
+    
+    try {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(`الله أكبر الله أكبر - حان وقت الصلاة - ${adhanOption.arabicName}`);
+        utterance.lang = 'ar-SA';
+        utterance.rate = 0.7;
+        utterance.pitch = 1.1;
+        speechSynthesis.speak(utterance);
+        console.log('🔊 Using speech synthesis as Adhan fallback');
+      }
+    } catch (fallbackError) {
+      console.error('❌ Speech fallback also failed:', fallbackError);
+    }
+    
+    throw new Error(`Failed to play Adhan for ${adhanOption.name}`);
   }
 
   // Pause current audio
