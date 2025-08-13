@@ -1,356 +1,276 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Book, Play, Pause, Volume2, Bookmark, BookmarkCheck } from 'lucide-react';
-import { quranService, QuranSurahInfo } from '../services/quranService';
-import { audioService } from '../services/audioService';
-import { storageService } from '../services/storageService';
+import { ArrowLeft, Book, Search, BookOpen, Globe } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { toast } from 'sonner';
 import LanguageToggle from '@/components/LanguageToggle';
 
-const Quran = () => {
+// Clean verse interface
+interface QuranVerse {
+  surahNumber: number;
+  verseNumber: number;
+  arabic: string;
+  translation?: string;
+  surahName: string;
+  surahNameArabic: string;
+}
+
+// Optimized verse component
+const VerseComponent = React.memo(({ verse, showTranslation }: { 
+  verse: QuranVerse; 
+  showTranslation: boolean;
+}) => (
+  <Card className="verse-card mb-4 transition-all duration-200 hover:shadow-md">
+    <CardContent className="p-6">
+      {/* Arabic Text */}
+      <div 
+        className="arabic-text leading-relaxed mb-4 text-xl md:text-2xl text-foreground text-right font-arabic"
+        lang="ar"
+        dir="rtl"
+      >
+        {verse.arabic} ﴿{verse.verseNumber}﴾
+      </div>
+      
+      {/* Translation */}
+      {showTranslation && verse.translation && (
+        <div className="translation text-sm text-muted-foreground mb-3 leading-relaxed border-l-2 border-primary/20 pl-4">
+          {verse.translation}
+        </div>
+      )}
+      
+      {/* Reference */}
+      <div className="verse-reference flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+        <Badge variant="outline" className="text-xs">
+          {verse.surahNameArabic} - {verse.surahName}
+        </Badge>
+        <span className="font-mono">
+          {verse.surahNumber}:{verse.verseNumber}
+        </span>
+      </div>
+    </CardContent>
+  </Card>
+));
+
+// Surah names mapping (first 10 for demo - add all 114)
+const SURAH_NAMES = {
+  1: { arabic: "الفاتحة", english: "Al-Fatihah" },
+  2: { arabic: "البقرة", english: "Al-Baqarah" },
+  3: { arabic: "آل عمران", english: "Ali 'Imran" },
+  4: { arabic: "النساء", english: "An-Nisa" },
+  5: { arabic: "المائدة", english: "Al-Ma'idah" },
+  6: { arabic: "الأنعام", english: "Al-An'am" },
+  7: { arabic: "الأعراف", english: "Al-A'raf" },
+  8: { arabic: "الأنفال", english: "Al-Anfal" },
+  9: { arabic: "التوبة", english: "At-Tawbah" },
+  10: { arabic: "يونس", english: "Yunus" }
+  // Add remaining surah names here
+};
+
+// Main Quran component
+const Quran: React.FC = () => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
-  const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentVerse, setCurrentVerse] = useState(1);
-  const [surahs, setSurahs] = useState<QuranSurahInfo[]>([]);
-  const [currentSurahData, setCurrentSurahData] = useState<{ arabic: any; english: any } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [surahLoading, setSurahLoading] = useState(false);
-  const [audioLoading, setAudioLoading] = useState(false);
-  const [readingProgress, setReadingProgress] = useState<any>(null);
+  const { t } = useLanguage();
+  const [currentSurah, setCurrentSurah] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showTranslation, setShowTranslation] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const loadSurahs = async () => {
-      setLoading(true);
-      try {
-        const surahsList = await quranService.getAllSurahs();
-        setSurahs(surahsList);
-        
-        // Load saved reading progress
-        const savedProgress = storageService.getReadingProgress();
-        if (savedProgress) {
-          setReadingProgress(savedProgress);
-        }
-      } catch (error) {
-        console.error('Error loading Surahs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Sample Quran data - REPLACE WITH YOUR COMPLETE DATASET
+  const quranData: QuranVerse[] = useMemo(() => [
+    {
+      surahNumber: 1,
+      verseNumber: 1,
+      arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      translation: "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+      surahName: "Al-Fatihah",
+      surahNameArabic: "الفاتحة"
+    },
+    {
+      surahNumber: 1,
+      verseNumber: 2,
+      arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      translation: "All praise is due to Allah, Lord of the worlds.",
+      surahName: "Al-Fatihah",
+      surahNameArabic: "الفاتحة"
+    },
+    {
+      surahNumber: 1,
+      verseNumber: 3,
+      arabic: "الرَّحْمَٰنِ الرَّحِيمِ",
+      translation: "The Entirely Merciful, the Especially Merciful,",
+      surahName: "Al-Fatihah",
+      surahNameArabic: "الفاتحة"
+    }
+  ], []);
 
-    loadSurahs();
+  // Performance optimized filtering
+  const filteredVerses = useMemo(() => {
+    let verses = quranData;
+    
+    // Filter by surah if not searching
+    if (!searchTerm) {
+      verses = verses.filter(v => v.surahNumber === currentSurah);
+    } else {
+      // Search in Arabic or translation
+      verses = verses.filter(verse => 
+        verse.arabic.includes(searchTerm) ||
+        (verse.translation && verse.translation.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        verse.surahName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        verse.surahNameArabic.includes(searchTerm)
+      );
+    }
+    
+    return verses;
+  }, [quranData, searchTerm, currentSurah]);
+
+  // Navigation handlers
+  const handleSurahChange = useCallback((surahNum: number) => {
+    if (surahNum >= 1 && surahNum <= 114) {
+      setCurrentSurah(surahNum);
+      setSearchTerm('');
+    }
   }, []);
 
-  // Auto-save reading progress when verse changes
-  useEffect(() => {
-    if (selectedSurah && currentVerse && currentSurahData) {
-      const currentSurahInfo = surahs.find(s => s.number === selectedSurah);
-      if (currentSurahInfo) {
-        storageService.saveReadingProgress(
-          selectedSurah,
-          currentVerse,
-          currentSurahInfo.englishName,
-          currentSurahInfo.name
-        );
-      }
-    }
-  }, [selectedSurah, currentVerse, currentSurahData, surahs]);
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    setIsLoading(true);
+    // Simulate search delay for large dataset
+    setTimeout(() => setIsLoading(false), 300);
+  }, []);
 
-  const handleSurahClick = async (surahNumber: number) => {
-    setSurahLoading(true);
-    setSelectedSurah(surahNumber);
-    setCurrentVerse(1);
-    
-    try {
-      // Check for verification errors first
-      if (quranService.hasVerificationError(surahNumber)) {
-        throw new Error('Quran text unavailable — verification failed');
-      }
-      
-      const surahData = await quranService.getSurah(surahNumber);
-      if (!surahData) {
-        throw new Error('Quran text unavailable — verification failed');
-      }
-      setCurrentSurahData(surahData);
-    } catch (error) {
-      console.error('Error loading Surah:', error);
-      if (error.message.includes('verification failed')) {
-        toast.error('Quran text unavailable — verification failed');
-      } else {
-        toast.error('فشل في تحميل السورة');
-      }
-      setSelectedSurah(null); // Reset selection on error
-    } finally {
-      setSurahLoading(false);
-    }
-  };
-
-  const toggleAudio = async () => {
-    if (!selectedSurah) return;
-
-    setAudioLoading(true);
-    try {
-      if (isPlaying) {
-        audioService.pause();
-        setIsPlaying(false);
-      } else {
-        await audioService.playSurah(selectedSurah);
-        setIsPlaying(true);
-        
-        audioService.addEventListener('ended', () => {
-          setIsPlaying(false);
-        });
-      }
-    } catch (error) {
-      console.error('Audio error:', error);
-      toast.error('فشل في تشغيل الصوت');
-    } finally {
-      setAudioLoading(false);
-    }
-  };
-
-  const resumeLastReading = () => {
-    if (readingProgress) {
-      handleSurahClick(readingProgress.surahNumber);
-      setCurrentVerse(readingProgress.verseNumber);
-      toast.success(`${t('resumeReading')} ${readingProgress.arabicName}`);
-    }
-  };
-
-  const bookmarkVerse = (verseNumber: number) => {
-    if (selectedSurah && currentSurahData) {
-      const currentSurahInfo = surahs.find(s => s.number === selectedSurah);
-      if (currentSurahInfo) {
-        storageService.saveReadingProgress(
-          selectedSurah,
-          verseNumber,
-          currentSurahInfo.englishName,
-          currentSurahInfo.name
-        );
-        toast.success(t('bookmarkSaved'));
-      }
-    }
-  };
-
-  const currentSurahInfo = selectedSurah ? surahs.find(s => s.number === selectedSurah) : null;
+  const currentSurahInfo = SURAH_NAMES[currentSurah] || { arabic: "", english: "Unknown" };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-islamic text-primary-foreground">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => selectedSurah ? setSelectedSurah(null) : navigate('/')}
-                className="text-primary-foreground hover:bg-primary-light/20"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center gap-3">
-                <Book className="w-6 h-6" />
-                <h1 className="text-2xl font-bold">{t('quran')}</h1>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-background to-secondary/5">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Header */}
+        <header className="mb-8 text-center">
+          <div className="flex items-center justify-between mb-4">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate('/')}
+              className="text-foreground hover:bg-accent"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <LanguageToggle />
           </div>
-        </div>
-      </div>
+          <h1 className="text-4xl font-bold mb-2 text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            القرآن الكريم
+          </h1>
+          <p className="text-muted-foreground flex items-center justify-center gap-2">
+            <BookOpen className="w-4 h-4" />
+            The Noble Quran - An-Nur Compass
+          </p>
+        </header>
 
-      <div className="px-6 py-6">
-        <div className="max-w-4xl mx-auto">
-          
-          {!selectedSurah ? (
-            /* Surah List */
-            <>
-              <h2 className="text-xl font-semibold mb-6 text-center islamic-heading">
-                {t('chooseSuprah')}
-              </h2>
-
-              {/* Resume Reading Card */}
-              {readingProgress && (
-                <Card className="mb-6 bg-gradient-primary text-primary-foreground border-0">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <BookmarkCheck className="w-6 h-6" />
-                        <div>
-                          <p className="font-semibold">{t('continueReading')}</p>
-                          <p className="text-sm opacity-90">
-                            {readingProgress.arabicName} - {t('verse')} {readingProgress.verseNumber}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={resumeLastReading}
-                      >
-                        {t('continueReading')}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {loading ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">{t('loading')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {surahs.map((surah) => (
-                    <Card 
-                      key={surah.number}
-                      className="prayer-card cursor-pointer bg-card hover:bg-accent/20 border border-border/50"
-                      onClick={() => handleSurahClick(surah.number)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-islamic flex items-center justify-center text-primary-foreground font-bold">
-                              {surah.number}
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground arabic-text">
-                                {surah.name}
-                              </h3>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground">
-                              {surah.numberOfAyahs} {t('verses')}
-                            </p>
-                            <Badge variant={surah.revelationType === 'Meccan' ? 'default' : 'secondary'}>
-                              {t(surah.revelationType.toLowerCase())}
-                            </Badge>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            /* Surah Reading View */
-            <>
-              <div className="flex items-center justify-between mb-6">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedSurah(null)}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {t('backToSurahs')}
-                </Button>
-                
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={toggleAudio}
-                    disabled={audioLoading}
-                  >
-                    {audioLoading ? (
-                      <Volume2 className="w-4 h-4 animate-pulse" />
-                    ) : isPlaying ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                    {audioLoading ? t('loading') : isPlaying ? t('pause') : t('play')}
-                  </Button>
+        {/* Controls */}
+        <Card className="mb-6 shadow-lg">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Surah selector */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  Surah
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="114"
+                    value={currentSurah}
+                    onChange={(e) => handleSurahChange(Number(e.target.value))}
+                    className="w-20"
+                  />
+                  <div className="flex-1 text-xs text-muted-foreground self-center">
+                    {currentSurahInfo.arabic} - {currentSurahInfo.english}
+                  </div>
                 </div>
               </div>
 
-              {surahLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">{t('loading')}</p>
-                </div>
-              ) : currentSurahInfo && currentSurahData ? (
-                <div className="space-y-6">
-                  <Card className="bg-gradient-islamic text-primary-foreground border-0">
-                    <CardContent className="p-6 text-center">
-                      <h1 className="text-3xl font-bold mb-2 arabic-text">
-                        {currentSurahInfo.name}
-                      </h1>
-                      <div className="flex items-center justify-center gap-4 mt-4">
-                        <Badge variant="secondary">
-                          {currentSurahInfo.numberOfAyahs} {t('verses')}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {t(currentSurahInfo.revelationType.toLowerCase())}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+              {/* Search */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Search
+                </label>
+                <Input
+                  placeholder="Search Arabic, translation, or surah..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full"
+                />
+              </div>
 
-                  {/* Bismillah Header - only for non-Tawbah surahs */}
-                  {selectedSurah !== 9 && (
-                    <Card className="bg-primary/5 border-primary/20">
-                      <CardContent className="p-6 text-center">
-                        <p className="text-3xl md:text-4xl text-primary font-semibold arabic-text">
-                          بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
+              {/* Options */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Display
+                </label>
+                <Button
+                  variant={showTranslation ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowTranslation(!showTranslation)}
+                  className="w-full"
+                >
+                  {showTranslation ? "Hide" : "Show"} Translation
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-                  {/* Verses - all Bismillah already cleaned by service */}
-                  <div className="space-y-6">
-                    {currentSurahData.arabic.ayahs.map((verse: any, index: number) => (
-                      <Card 
-                        key={`verse-${verse.number}-${index}`} 
-                        className="bg-card border-border/50"
-                      >
-                        <CardContent className="p-6">
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between mb-4">
-                              <Badge variant="outline" className="text-xs">
-                                {t('verse')} {verse.numberInSurah}
-                              </Badge>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => bookmarkVerse(verse.numberInSurah)}
-                              >
-                                <Bookmark className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            
-                            <div className="text-center">
-                              <p className="arabic-text leading-relaxed mb-4 text-xl md:text-2xl text-foreground">
-                                {/* Ensure first verse has Bismillah removed */}
-                                {verse.text && verse.text.trim() ? 
-                                  `${verse.text} ﴿${verse.numberInSurah}﴾` : 
-                                  `﴿${verse.numberInSurah}﴾`
-                                }
-                              </p>
-                              <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </>
+        {/* Results Info */}
+        <div className="mb-4 text-sm text-muted-foreground">
+          {searchTerm ? (
+            <p>Found {filteredVerses.length} verse(s) matching "{searchTerm}"</p>
+          ) : (
+            <p>Showing Surah {currentSurah}: {currentSurahInfo.arabic} ({filteredVerses.length} verses)</p>
           )}
-
         </div>
-      </div>
 
-      {/* Islamic Pattern Background */}
-      <div className="fixed inset-0 pattern-islamic opacity-5 pointer-events-none"></div>
+        {/* Verses Display */}
+        <ScrollArea className="h-[600px] rounded-lg border">
+          <div className="p-4 space-y-4">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+                <p className="text-muted-foreground">Loading verses...</p>
+              </div>
+            ) : filteredVerses.length > 0 ? (
+              filteredVerses.map((verse) => (
+                <VerseComponent
+                  key={`${verse.surahNumber}-${verse.verseNumber}`}
+                  verse={verse}
+                  showTranslation={showTranslation}
+                />
+              ))
+            ) : (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    No verses found. Try adjusting your search or surah selection.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Footer */}
+        <footer className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mb-2">بارك الله فيك - May Allah bless you in your Quran reading journey</p>
+          <p className="text-xs">An-Nur Compass - Guiding you towards the light</p>
+        </footer>
+      </div>
     </div>
   );
 };
