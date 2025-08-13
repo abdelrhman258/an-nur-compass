@@ -161,39 +161,22 @@ class AuthenticQuranAPI {
   private processAuthenticArabic(rawSurah: any, surahNumber: number): QuranSurah {
     const verses: QuranVerse[] = [];
     
-    if (surahNumber === 9) {
-      // 🕌 AT-TAWBAH: NO BISMILLAH (EXACTLY AS IN MADANI MUSHAF)
-      rawSurah.ayahs.forEach((verse: any, index: number) => {
+    // 🎯 PROCESS ALL SURAHS THE SAME WAY - NO BISMILLAH IN ARRAY
+    rawSurah.ayahs.forEach((verse: any, index: number) => {
+      const cleanText = this.cleanAuthenticText(verse.text);
+      if (cleanText.trim()) { // Only add if text exists after cleaning
         verses.push({
           number: index + 1,
-          text: this.cleanAuthenticText(verse.text),
+          text: cleanText,
           numberInSurah: index + 1
         });
-      });
-      console.log(`🎯 At-Tawbah processed: ${verses.length} verses, NO Bismillah`);
+      }
+    });
+    
+    if (surahNumber === 9) {
+      console.log(`🎯 At-Tawbah processed: ${verses.length} verses, NO Bismillah anywhere`);
     } else {
-      // 📖 ALL OTHER 113 SURAHS: BISMILLAH AS UNNUMBERED HEADER
-      
-      // Add Bismillah header (unnumbered)
-      verses.push({
-        number: 0, // Special marker for Bismillah header
-        text: this.BISMILLAH,
-        numberInSurah: 0
-      });
-      
-      // Add numbered verses (clean of any embedded Bismillah)
-      rawSurah.ayahs.forEach((verse: any, index: number) => {
-        const cleanText = this.cleanAuthenticText(verse.text);
-        if (cleanText.trim()) { // Only add if text exists after cleaning
-          verses.push({
-            number: index + 1,
-            text: cleanText,
-            numberInSurah: index + 1
-          });
-        }
-      });
-      
-      console.log(`🎯 Surah ${surahNumber} processed: 1 Bismillah header + ${verses.length - 1} numbered verses`);
+      console.log(`🎯 Surah ${surahNumber} processed: ${verses.length} numbered verses (Bismillah handled separately by UI)`);
     }
 
     return {
@@ -202,7 +185,7 @@ class AuthenticQuranAPI {
       englishName: rawSurah.englishName || this.getSurahEnglishName(surahNumber),
       englishNameTranslation: rawSurah.englishNameTranslation || this.getSurahTranslation(surahNumber),
       revelationType: rawSurah.revelationType || this.getSurahRevelationType(surahNumber),
-      numberOfAyahs: verses.filter(v => v.number > 0).length, // Count only numbered verses
+      numberOfAyahs: verses.length, // Count all verses (no special handling)
       ayahs: verses
     };
   }
@@ -211,31 +194,14 @@ class AuthenticQuranAPI {
   private processAuthenticEnglish(rawSurah: any, surahNumber: number): QuranSurah {
     const verses: QuranVerse[] = [];
     
-    if (surahNumber === 9) {
-      // At-Tawbah: No Bismillah
-      rawSurah.ayahs.forEach((verse: any, index: number) => {
-        verses.push({
-          number: index + 1,
-          text: verse.text,
-          numberInSurah: index + 1
-        });
-      });
-    } else {
-      // Other surahs: Bismillah header + verses
+    // Same logic - NO Bismillah in verses array for any surah
+    rawSurah.ayahs.forEach((verse: any, index: number) => {
       verses.push({
-        number: 0,
-        text: "In the name of Allah, the Most Gracious, the Most Merciful.",
-        numberInSurah: 0
+        number: index + 1,
+        text: verse.text,
+        numberInSurah: index + 1
       });
-      
-      rawSurah.ayahs.forEach((verse: any, index: number) => {
-        verses.push({
-          number: index + 1,
-          text: verse.text,
-          numberInSurah: index + 1
-        });
-      });
-    }
+    });
 
     return {
       number: surahNumber,
@@ -243,7 +209,7 @@ class AuthenticQuranAPI {
       englishName: rawSurah.englishName || this.getSurahEnglishName(surahNumber),
       englishNameTranslation: rawSurah.englishNameTranslation || this.getSurahTranslation(surahNumber),
       revelationType: rawSurah.revelationType || this.getSurahRevelationType(surahNumber),
-      numberOfAyahs: verses.filter(v => v.number > 0).length,
+      numberOfAyahs: verses.length,
       ayahs: verses
     };
   }
