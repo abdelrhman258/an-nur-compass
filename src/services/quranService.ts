@@ -131,18 +131,10 @@ class CompliantQuranAPI {
     
     let cleaned = text.trim();
     
-    // Remove all Bismillah variations
-    const bismillahPatterns = [
-      'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-      'بسم الله الرحمن الرحيم'
-    ];
-    
-    bismillahPatterns.forEach(pattern => {
-      while (cleaned.includes(pattern)) {
-        cleaned = cleaned.replace(pattern, ' ');
-      }
-    });
+    // Remove Bismillah patterns
+    cleaned = cleaned.replace('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ', '');
+    cleaned = cleaned.replace('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '');
+    cleaned = cleaned.replace('بسم الله الرحمن الرحيم', '');
     
     // Clean extra spaces
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
@@ -371,6 +363,11 @@ class CompliantQuranAPI {
       }
       
       const cleanText = this.cleanBismillah(ayah.text);
+      
+      // Debug verification
+      if (cleanText.includes('بِسْمِ اللَّهِ')) {
+        console.warn(`🚨 STILL HAS BISMILLAH: Verse ${index + 1}:`, cleanText);
+      }
       
       if (cleanText.length > 0) {
         ayahs.push({
