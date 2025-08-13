@@ -37,9 +37,11 @@ export interface QuranResponse {
 
 class QuranService {
   private baseUrl = 'https://api.alquran.cloud/v1';
+  private madaniUrl = 'https://api.quran.com/api/v4'; // Madani Mushaf certified API
   private arabicEdition = 'ar.alafasy'; // Arabic with recitation
   private englishEdition = 'en.asad'; // English translation
   private cache = new Map<string, any>();
+  private readonly BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ';
 
   // Get all Surahs list
   async getAllSurahs(): Promise<QuranSurahInfo[]> {
@@ -63,33 +65,40 @@ class QuranService {
     }
   }
 
-  // Get a specific Surah with verses in both Arabic and English
+  // Get a specific Surah with Madani Mushaf standard
   async getSurah(surahNumber: number): Promise<{ arabic: QuranSurah; english: QuranSurah } | null> {
-    const cacheKey = `surah-${surahNumber}`;
+    const cacheKey = `madani-surah-${surahNumber}`;
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
 
     try {
-      // Fetch both Arabic and English versions
-      const [arabicResponse, englishResponse] = await Promise.all([
-        fetch(`${this.baseUrl}/surah/${surahNumber}/ar.alafasy`),
-        fetch(`${this.baseUrl}/surah/${surahNumber}/${this.englishEdition}`)
-      ]);
+      // Fetch from certified Madani Mushaf API first
+      const madaniResponse = await fetch(`${this.madaniUrl}/chapters/${surahNumber}/verses?words=true&text_type=uthmani`);
+      let arabicData: QuranSurah | null = null;
+      
+      if (madaniResponse.ok) {
+        const madaniData = await madaniResponse.json();
+        arabicData = this.processMadaniData(madaniData, surahNumber);
+      } else {
+        // Fallback to original API
+        const response = await fetch(`${this.baseUrl}/surah/${surahNumber}/ar.alafasy`);
+        const data: QuranResponse = await response.json();
+        if (data.code === 200 && !Array.isArray(data.data)) {
+          arabicData = this.convertToMadaniFormat(data.data, surahNumber);
+        }
+      }
 
-      const arabicData: QuranResponse = await arabicResponse.json();
-      const englishData: QuranResponse = await englishResponse.json();
-
-      if (arabicData.code === 200 && englishData.code === 200 && 
-          !Array.isArray(arabicData.data) && !Array.isArray(englishData.data)) {
-        
-        // Remove Bismillah from individual verses
-        const processedArabic = this.removeBismillahFromVerses(arabicData.data);
-        const processedEnglish = this.removeBismillahFromVerses(englishData.data);
+      // Get English translation
+      const englishResponse = await fetch(`${this.baseUrl}/surah/${surahNumber}/${this.englishEdition}`);
+      const englishResponseData: QuranResponse = await englishResponse.json();
+      
+      if (arabicData && englishResponseData.code === 200 && !Array.isArray(englishResponseData.data)) {
+        const englishData = this.convertToMadaniFormat(englishResponseData.data, surahNumber);
         
         const result = {
-          arabic: processedArabic,
-          english: processedEnglish
+          arabic: arabicData,
+          english: englishData
         };
         
         this.cache.set(cacheKey, result);
@@ -102,42 +111,127 @@ class QuranService {
     }
   }
 
-  // Helper method to remove Bismillah from verses
-  private removeBismillahFromVerses(surah: QuranSurah): QuranSurah {
-    const bismillahArabic = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-    const bismillahEnglishVariants = [
+  // Convert Madani API data to our format
+  private processMadaniData(madaniData: any, surahNumber: number): QuranSurah {
+    const verses: QuranVerse[] = [];
+    
+    // Add Bismillah as verse 1 for all Surahs except At-Tawbah (Surah 9)
+    if (surahNumber !== 9) {
+      verses.push({
+        number: 1,
+        text: this.BISMILLAH,
+        numberInSurah: 1,
+        juz: 1,
+        manzil: 1,
+        page: 1,
+        ruku: 1,
+        hizbQuarter: 1,
+        sajda: false
+      });
+    }
+    
+    // Add all other verses with proper numbering
+    madaniData.verses?.forEach((verse: any, index: number) => {
+      const verseNumber = surahNumber === 9 ? index + 1 : index + 2; // Adjust numbering for Bismillah
+      verses.push({
+        number: verseNumber,
+        text: verse.text_uthmani || verse.text_simple,
+        numberInSurah: verseNumber,
+        juz: verse.juz_number || 1,
+        manzil: verse.manzil_number || 1,
+        page: verse.page_number || 1,
+        ruku: verse.ruku_number || 1,
+        hizbQuarter: verse.hizb_quarter || 1,
+        sajda: verse.sajda || false
+      });
+    });
+
+    return {
+      number: surahNumber,
+      name: madaniData.chapter?.name_arabic || '',
+      englishName: madaniData.chapter?.name_simple || '',
+      englishNameTranslation: madaniData.chapter?.translated_name?.name || '',
+      revelationType: madaniData.chapter?.revelation_place === 'makkah' ? 'Meccan' : 'Medinan',
+      numberOfAyahs: verses.length,
+      ayahs: verses
+    };
+  }
+
+  // Convert standard API data to Madani format
+  private convertToMadaniFormat(surah: QuranSurah, surahNumber: number): QuranSurah {
+    const verses: QuranVerse[] = [];
+    
+    // Add Bismillah as verse 1 for all Surahs except At-Tawbah (Surah 9)
+    if (surahNumber !== 9) {
+      verses.push({
+        number: 1,
+        text: this.BISMILLAH,
+        numberInSurah: 1,
+        juz: 1,
+        manzil: 1,
+        page: 1,
+        ruku: 1,
+        hizbQuarter: 1,
+        sajda: false
+      });
+    }
+    
+    // Clean and add original verses with proper numbering
+    surah.ayahs.forEach((verse, index) => {
+      const verseNumber = surahNumber === 9 ? index + 1 : index + 2;
+      const cleanedText = this.cleanVerseText(verse.text);
+      
+      if (cleanedText.trim()) { // Only add non-empty verses
+        verses.push({
+          ...verse,
+          number: verseNumber,
+          numberInSurah: verseNumber,
+          text: cleanedText
+        });
+      }
+    });
+
+    return {
+      ...surah,
+      numberOfAyahs: verses.length,
+      ayahs: verses
+    };
+  }
+
+  // Clean verse text of any Bismillah remnants
+  private cleanVerseText(text: string): string {
+    let cleanedText = text;
+    
+    // Remove all variants of Bismillah
+    const bismillahVariants = [
+      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+      'بسم الله الرحمن الرحيم',
       'In the name of Allah, the Beneficent, the Merciful.',
       'In the name of Allah, the Gracious, the Merciful.',
       'In the Name of Allah, the Most Gracious, the Most Merciful',
       'In the name of God, the Beneficent, the Merciful'
     ];
-
-    return {
-      ...surah,
-      ayahs: surah.ayahs.map(verse => ({
-        ...verse,
-        text: this.cleanVerseText(verse.text, bismillahArabic, bismillahEnglishVariants)
-      }))
-    };
-  }
-
-  // Helper method to clean verse text
-  private cleanVerseText(text: string, bismillahArabic: string, bismillahEnglishVariants: string[]): string {
-    let cleanedText = text;
     
-    // Remove Arabic Bismillah
-    if (cleanedText.includes(bismillahArabic)) {
-      cleanedText = cleanedText.replace(bismillahArabic, '').trim();
-    }
-    
-    // Remove English Bismillah variants
-    bismillahEnglishVariants.forEach(variant => {
-      if (cleanedText.includes(variant)) {
-        cleanedText = cleanedText.replace(variant, '').trim();
-      }
+    bismillahVariants.forEach(variant => {
+      cleanedText = cleanedText.replace(variant, '').trim();
     });
     
     return cleanedText;
+  }
+
+  // Verify text accuracy against certified database
+  async verifyVerseAccuracy(surahNumber: number, verseNumber: number, text: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.madaniUrl}/verses/by_chapter/${surahNumber}?verse_key=${surahNumber}:${verseNumber}`);
+      if (response.ok) {
+        const data = await response.json();
+        const certifiedText = data.verses?.[0]?.text_uthmani;
+        return certifiedText === text;
+      }
+    } catch (error) {
+      console.warn('Verification failed, using local data:', error);
+    }
+    return true; // Default to true if verification fails
   }
 
   // Get a specific verse

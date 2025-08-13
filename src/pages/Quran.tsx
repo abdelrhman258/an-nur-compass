@@ -280,18 +280,7 @@ const Quran = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Bismillah - Show for all Surahs except Surah 9 (At-Tawbah) */}
-                  {selectedSurah !== 9 && (
-                    <Card className="bg-accent/20 border border-accent/30">
-                      <CardContent className="p-6 text-center">
-                        <p className="arabic-text text-2xl md:text-3xl text-primary leading-relaxed">
-                          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Verses */}
+                  {/* Verses - Madani Mushaf Standard: Bismillah included as verse 1 */}
                   <div className="space-y-6">
                     {currentSurahData.arabic.ayahs.map((verse: any, index: number) => (
                       <Card key={verse.number} className="bg-card border border-border/50">
@@ -311,7 +300,13 @@ const Quran = () => {
                             </div>
                             
                             <div className="text-center">
-                              <p className="arabic-text text-xl md:text-2xl text-primary leading-relaxed mb-4">
+                              <p 
+                                className={`arabic-text leading-relaxed mb-4 ${
+                                  verse.numberInSurah === 1 && selectedSurah !== 9 && verse.text.includes('بِسْمِ اللَّهِ') 
+                                    ? 'text-2xl md:text-3xl text-accent font-semibold' 
+                                    : 'text-xl md:text-2xl text-primary'
+                                }`}
+                              >
                                 {verse.text} ﴿{verse.numberInSurah}﴾
                               </p>
                               <div className="w-16 h-px bg-gradient-secondary mx-auto"></div>
