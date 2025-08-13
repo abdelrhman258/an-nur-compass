@@ -14,6 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
+import PrayerCountdown from '@/components/PrayerCountdown';
 import mosqueHero from '@/assets/mosque-hero.jpg';
 
 const Index = () => {
@@ -30,8 +31,16 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Convert to Arabic numerals if language is Arabic
+  const toArabicNumerals = (text: string): string => {
+    if (language !== 'ar') return text;
+    
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return text.replace(/[0-9]/g, (digit) => arabicNumerals[parseInt(digit)]);
+  };
+
   // Format current date in both Gregorian and Hijri
-  const gregorianDate = currentTime.toLocaleDateString('en-US', {
+  const gregorianDate = currentTime.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -39,7 +48,7 @@ const Index = () => {
   });
 
   // Simplified Hijri date (in a real app, use a proper Hijri calendar library)
-  const hijriDate = "15 Jumada al-Thani 1446";
+  const hijriDate = language === 'ar' ? "١٥ جمادى الآخرة ١٤٤٦" : "15 Jumada al-Thani 1446";
 
   const navigationCards = [
     {
@@ -128,14 +137,12 @@ const Index = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {t('today')} • {currentTime.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { 
+              {t('today')} • {toArabicNumerals(currentTime.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit' 
-              })}
+              }))}
             </div>
-            <div className="text-sm text-primary font-medium">
-              {t('nextPrayer')}: {t('maghrib')} in 2h 34m
-            </div>
+            <PrayerCountdown />
           </div>
         </div>
       </div>
