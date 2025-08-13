@@ -80,6 +80,8 @@ class NotificationService {
   private async triggerAdhan(prayerName: string): Promise<void> {
     if (!this.settings.enabled) return;
 
+    console.log(`🕌 Triggering Adhan for ${prayerName} with sound: ${this.settings.adhanSound}`);
+
     // Show browser notification
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(`حان وقت صلاة ${this.getPrayerNameArabic(prayerName)}`, {
@@ -91,9 +93,20 @@ class NotificationService {
 
     // Play Adhan audio
     try {
+      console.log(`🔊 Attempting to play Adhan: ${this.settings.adhanSound}`);
       await audioService.playAdhan(this.settings.adhanSound);
+      console.log(`✅ Adhan played successfully for ${prayerName}`);
     } catch (error) {
-      console.error('Failed to play Adhan:', error);
+      console.error(`❌ Failed to play Adhan for ${prayerName}:`, error);
+      
+      // Show fallback notification in Arabic
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`فشل في تشغيل الأذان`, {
+          body: 'يرجى التحقق من إعدادات الصوت',
+          icon: '/favicon.ico',
+          tag: 'adhan-error'
+        });
+      }
     }
   }
 
