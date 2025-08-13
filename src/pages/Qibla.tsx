@@ -1,57 +1,181 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Compass, MapPin, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Compass, MapPin, RotateCcw, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from '@/components/LanguageToggle';
+import { toast } from 'sonner';
 
 const Qibla = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [direction, setDirection] = useState(0);
-  const [qiblaDirection] = useState(45); // Sample qibla direction (45° from North)
+  const [qiblaDirection, setQiblaDirection] = useState(0);
+  const [userPosition, setUserPosition] = useState<{lat: number; lng: number} | null>(null);
   const [location, setLocation] = useState(language === 'ar' ? "جارٍ تحديد الموقع..." : "Getting location...");
   const [district, setDistrict] = useState("");
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
   const [isAligned, setIsAligned] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const watchId = useRef<number | null>(null);
 
-  useEffect(() => {
-    // Simulate getting detailed location
-    setTimeout(() => {
-      if (language === 'ar') {
-        setDistrict("الملك فهد");
-        setCity("الرياض");
-        setCountry("المملكة العربية السعودية");
-        setLocation("الملك فهد، الرياض");
+  // Calculate Qibla direction from user's position to Kaaba (Mecca)
+  const calculateQiblaDirection = (lat: number, lng: number): number => {
+    // Kaaba coordinates
+    const kaabaLat = 21.4225; // Latitude of the Kaaba
+    const kaabaLng = 39.8262; // Longitude of the Kaaba
+    
+    const toRadians = (deg: number) => deg * (Math.PI / 180);
+    const toDegrees = (rad: number) => rad * (180 / Math.PI);
+    
+    const dLng = toRadians(kaabaLng - lng);
+    const lat1 = toRadians(lat);
+    const lat2 = toRadians(kaabaLat);
+    
+    const x = Math.sin(dLng) * Math.cos(lat2);
+    const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+    
+    let bearing = toDegrees(Math.atan2(x, y));
+    return (bearing + 360) % 360; // Normalize to 0-360 degrees
+  };
+
+  // Calculate distance to Kaaba
+  const calculateDistanceToKaaba = (lat: number, lng: number): number => {
+    const kaabaLat = 21.4225;
+    const kaabaLng = 39.8262;
+    
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (kaabaLat - lat) * Math.PI / 180;
+    const dLng = (kaabaLng - lng) * Math.PI / 180;
+    
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat * Math.PI / 180) * Math.cos(kaabaLat * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return Math.round(R * c);
+  };
+
+  // Get user's accurate GPS location
+  const getCurrentLocation = () => {
+    setIsLoading(true);
+    
+    if (!navigator.geolocation) {
+      toast.error(language === 'ar' ? 'خدمة تحديد الموقع غير متوفرة' : 'Geolocation is not supported');
+      setIsLoading(false);
+      return;
+    }
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 300000 // 5 minutes
+    };
+
+    const success = (position: GeolocationPosition) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      setUserPosition({ lat: latitude, lng: longitude });
+      setGpsAccuracy(accuracy);
+      
+      const qiblaDir = calculateQiblaDirection(latitude, longitude);
+      setQiblaDirection(qiblaDir);
+      
+      // Reverse geocoding for location name
+      fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${language === 'ar' ? 'ar' : 'en'}`)
+        .then(response => response.json())
+        .then(data => {
+          setDistrict(data.locality || data.city || '');
+          setCity(data.city || data.principalSubdivision || '');
+          setCountry(data.countryName || '');
+          setLocation(`${data.locality || data.city || ''}, ${data.city || data.principalSubdivision || ''}`);
+        })
+        .catch(() => {
+          setLocation(language === 'ar' ? 'موقع محدد بدقة' : 'Location acquired');
+        });
+      
+      setIsLoading(false);
+      
+      if (accuracy <= 50) {
+        toast.success(language === 'ar' ? 'تم تحديد موقعك بدقة عالية' : 'High accuracy location acquired');
       } else {
-        setDistrict("Manhattan");
-        setCity("New York");
-        setCountry("United States");
-        setLocation("Manhattan, New York");
+        toast.info(language === 'ar' ? 'دقة الموقع متوسطة' : 'Location accuracy is moderate');
       }
-    }, 2000);
+    };
 
-    // Simulate compass reading
-    const interval = setInterval(() => {
-      // In a real app, this would use device orientation API
-      setDirection(prev => {
-        const newDirection = prev + (Math.random() - 0.5) * 10;
-        const normalizedDirection = ((newDirection % 360) + 360) % 360;
-        
-        // Check if aligned with Qibla (within 10 degrees)
-        const diff = Math.abs(normalizedDirection - qiblaDirection);
-        const isAlignedNow = diff < 10 || diff > 350;
-        setIsAligned(isAlignedNow);
-        
-        return normalizedDirection;
-      });
-    }, 1000);
+    const error = (err: GeolocationPositionError) => {
+      setIsLoading(false);
+      let message = language === 'ar' ? 'خطأ في تحديد الموقع' : 'Location error';
+      
+      switch(err.code) {
+        case err.PERMISSION_DENIED:
+          message = language === 'ar' ? 'تم رفض إذن الوصول للموقع' : 'Location permission denied';
+          break;
+        case err.POSITION_UNAVAILABLE:
+          message = language === 'ar' ? 'الموقع غير متاح' : 'Location unavailable';
+          break;
+        case err.TIMEOUT:
+          message = language === 'ar' ? 'انتهت مهلة تحديد الموقع' : 'Location timeout';
+          break;
+      }
+      
+      toast.error(message);
+    };
 
-    return () => clearInterval(interval);
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  };
+
+  // Watch device orientation for compass
+  useEffect(() => {
+    const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
+      if (event.alpha !== null) {
+        // Convert compass heading to 0-360 degrees
+        let heading = 360 - event.alpha;
+        heading = (heading + 360) % 360;
+        setDirection(heading);
+        
+        // Check alignment with Qibla (within 5 degrees for higher precision)
+        if (qiblaDirection > 0) {
+          const diff = Math.abs(heading - qiblaDirection);
+          const isAlignedNow = diff < 5 || diff > 355;
+          setIsAligned(isAlignedNow);
+        }
+      }
+    };
+
+    // Request device orientation permission on iOS 13+
+    const requestPermission = async () => {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        try {
+          const permission = await (DeviceOrientationEvent as any).requestPermission();
+          if (permission === 'granted') {
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+          } else {
+            toast.error(language === 'ar' ? 'مطلوب إذن البوصلة' : 'Compass permission required');
+          }
+        } catch (error) {
+          toast.error(language === 'ar' ? 'خطأ في الوصول للبوصلة' : 'Compass access error');
+        }
+      } else {
+        // Non-iOS devices
+        window.addEventListener('deviceorientation', handleDeviceOrientation);
+      }
+    };
+
+    requestPermission();
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleDeviceOrientation);
+    };
   }, [qiblaDirection, language]);
+
+  // Initialize location on component mount
+  useEffect(() => {
+    getCurrentLocation();
+  }, [language]);
 
   const getQiblaArrowRotation = () => {
     return qiblaDirection - direction;
@@ -68,20 +192,7 @@ const Qibla = () => {
   };
 
   const refreshLocation = () => {
-    setLocation(language === 'ar' ? "جارٍ تحديد الموقع..." : "Getting location...");
-    setTimeout(() => {
-      if (language === 'ar') {
-        setDistrict("الملك فهد");
-        setCity("الرياض");
-        setCountry("المملكة العربية السعودية");
-        setLocation("الملك فهد، الرياض");
-      } else {
-        setDistrict("Manhattan");
-        setCity("New York");
-        setCountry("United States");
-        setLocation("Manhattan, New York");
-      }
-    }, 2000);
+    getCurrentLocation();
   };
 
   return (
@@ -100,8 +211,8 @@ const Qibla = () => {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               <div className="flex items-center gap-3">
-                <Compass className="w-6 h-6" />
-                <h1 className="text-2xl font-bold">{t('qiblaDirection')}</h1>
+                <Target className="w-6 h-6" />
+                <h1 className="text-2xl font-bold">{language === 'ar' ? 'بوصلة القبلة' : 'Qibla Compass'}</h1>
               </div>
             </div>
             
@@ -134,6 +245,11 @@ const Qibla = () => {
                 <p className="font-bold text-lg text-foreground">📍 {district}</p>
                 <p className="text-muted-foreground">🏙 {city}</p>
                 <p className="text-sm text-muted-foreground">🌍 {country}</p>
+                {gpsAccuracy && (
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'ar' ? 'دقة GPS:' : 'GPS Accuracy:'} {Math.round(gpsAccuracy)}m
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -224,8 +340,13 @@ const Qibla = () => {
                 )}
                 
                 <div className="mt-3 text-sm text-muted-foreground">
-                  <p>{language === 'ar' ? 'اتجاه القبلة:' : 'Qibla Direction:'} {qiblaDirection}° {language === 'ar' ? 'من الشمال' : 'from North'}</p>
+                  <p>{language === 'ar' ? 'اتجاه القبلة:' : 'Qibla Direction:'} {Math.round(qiblaDirection)}° {language === 'ar' ? 'من الشمال' : 'from North'}</p>
                   <p>{language === 'ar' ? 'الاتجاه الحالي:' : 'Current Bearing:'} {Math.round(direction)}°</p>
+                  {userPosition && (
+                    <p className="text-xs mt-1">
+                      {language === 'ar' ? 'المسافة إلى مكة:' : 'Distance to Mecca:'} {calculateDistanceToKaaba(userPosition.lat, userPosition.lng)} {language === 'ar' ? 'كم' : 'km'}
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -255,12 +376,33 @@ const Qibla = () => {
             </CardContent>
           </Card>
 
-          {/* Distance Info */}
+          {/* GPS Status & Distance Info */}
           <Card className="bg-accent/20 border border-accent/30">
             <CardContent className="p-4 text-center">
-              <h3 className="font-semibold mb-2 text-accent-foreground">{t('distanceToMecca')}</h3>
-              <p className="text-2xl font-bold text-primary">5,495 {t('km')}</p>
-              <p className="text-sm text-muted-foreground">{t('greatCircleDistance')}</p>
+              <h3 className="font-semibold mb-2 text-accent-foreground">
+                {language === 'ar' ? 'معلومات GPS' : 'GPS Information'}
+              </h3>
+              {userPosition ? (
+                <div className="space-y-2">
+                  <p className="text-2xl font-bold text-primary">
+                    {calculateDistanceToKaaba(userPosition.lat, userPosition.lng)} {language === 'ar' ? 'كم' : 'km'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' ? 'المسافة إلى الكعبة المشرفة' : 'Distance to the Holy Kaaba'}
+                  </p>
+                  <div className="flex items-center justify-center gap-1 text-xs">
+                    <div className={`w-2 h-2 rounded-full ${gpsAccuracy && gpsAccuracy <= 50 ? 'bg-green-500' : gpsAccuracy && gpsAccuracy <= 100 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                    <span className="text-muted-foreground">
+                      {language === 'ar' ? 'دقة عالية' : gpsAccuracy && gpsAccuracy <= 50 ? 'High Accuracy' : gpsAccuracy && gpsAccuracy <= 100 ? 'Medium Accuracy' : 'Low Accuracy'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-muted-foreground">
+                  {isLoading ? (language === 'ar' ? 'جارٍ تحديد الموقع...' : 'Getting location...') : 
+                   (language === 'ar' ? 'لم يتم تحديد الموقع' : 'Location not available')}
+                </div>
+              )}
             </CardContent>
           </Card>
 
