@@ -26,7 +26,7 @@ const PrayerTrackingDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md text-center">
+      <DialogContent className="sm:max-w-md text-center" aria-describedby="prayer-tracking-description">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-primary mb-4">
             <div className="flex items-center justify-center gap-3 mb-3">
@@ -36,7 +36,7 @@ const PrayerTrackingDialog = ({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="py-6">
+        <div id="prayer-tracking-description" className="py-6">
           <p className="text-lg mb-6 text-foreground font-medium">
             هل صليت صلاة {prayerName}؟
           </p>

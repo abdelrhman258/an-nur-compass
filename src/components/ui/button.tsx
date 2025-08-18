@@ -14,6 +14,8 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        premium: "bg-gradient-islamic text-primary-foreground hover:shadow-prayer transition-all duration-300",
+        mosque: "bg-gradient-mosque text-primary-foreground hover:shadow-mosque hover:scale-105 transition-all duration-300",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
