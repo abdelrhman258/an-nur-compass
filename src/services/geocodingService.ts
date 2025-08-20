@@ -161,7 +161,7 @@ class GeocodingService {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'An-Nur-Compass/1.0.0 (Islamic prayer app)'
+        'User-Agent': 'an-nur-compass/1.0 (contact: support@yourdomain.com)'
       }
     });
 
@@ -209,7 +209,7 @@ class GeocodingService {
       const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'An-Nur-Compass/1.0.0 (Islamic prayer app)'
+          'User-Agent': 'an-nur-compass/1.0 (contact: support@yourdomain.com)'
         }
       });
 

@@ -1,299 +1,233 @@
-// ✅ PRODUCTION-READY SERVICE WORKER FOR AN-NUR COMPASS
-// PWA with offline capabilities, background sync, and push notifications
+// ✅ PRODUCTION SERVICE WORKER FOR AN-NUR COMPASS
+// Offline caching, update management, and PWA features
 
-const CACHE_NAME = 'an-nur-compass-v1.0.0';
-const DATA_CACHE_NAME = 'an-nur-data-v1.0.0';
+const CACHE_NAME = 'an-nur-compass-v1';
+const DATA_CACHE_NAME = 'an-nur-data-v1';
 
-// Static assets to cache immediately
+// Static assets to cache
 const STATIC_CACHE_URLS = [
   '/',
-  '/index.html',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
+  '/offline.html',
   '/manifest.webmanifest',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/mosque-hero.jpg',
-  // Core app routes
-  '/prayer-times',
-  '/qibla', 
-  '/quran',
-  '/azkar',
-  '/mosques',
-  // Adhan audio files
-  '/src/assets/audio/adhan-madinah-imam.mp3',
-  '/src/assets/audio/adhan-makkah-imam.mp3',
-  '/src/assets/audio/adhan-mishary-alafasy.mp3',
-  '/src/assets/audio/adhan-mohammed-rifaat.mp3',
-  '/src/assets/audio/adhan-naqshabandi.mp3',
-  '/src/assets/audio/adhan-saad-ghamdi.mp3'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
-// API endpoints that can be cached
+// API endpoints to cache
 const API_CACHE_PATTERNS = [
-  'https://api.alquran.cloud/',
-  'https://api.bigdatacloud.net/',
-  'https://api.tanzil.net/'
+  /^https:\/\/api\.bigdatacloud\.net\//,
+  /^https:\/\/nominatim\.openstreetmap\.org\//,
+  /^https:\/\/api\.alquran\.cloud\//
 ];
 
 // ✅ INSTALL EVENT - Cache static assets
 self.addEventListener('install', (event) => {
-  console.log('🔄 Service Worker: Installing');
-  
+  console.log('✅ Service Worker installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('📦 Service Worker: Caching app shell');
+        console.log('✅ Caching static assets');
         return cache.addAll(STATIC_CACHE_URLS);
       })
-      .then(() => {
-        console.log('✅ Service Worker: Installed successfully');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('❌ Service Worker: Installation failed', error);
-      })
+      .then(() => self.skipWaiting())
   );
 });
 
 // ✅ ACTIVATE EVENT - Clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('🔄 Service Worker: Activating');
-  
+  console.log('✅ Service Worker activating...');
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
-              console.log('🗑️ Service Worker: Deleting old cache', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('✅ Service Worker: Activated successfully');
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
+            console.log('🗑️ Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('✅ Service Worker activated');
+      return self.clients.claim();
+    })
   );
 });
 
-// ✅ FETCH EVENT - Network strategies
+// ✅ FETCH EVENT - Handle all network requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
-  // Handle API requests with cache-first strategy for better offline experience
-  if (API_CACHE_PATTERNS.some(pattern => request.url.includes(pattern))) {
+
+  // Handle API requests with cache-first strategy and background cache update
+  if (API_CACHE_PATTERNS.some(pattern => pattern.test(request.url))) {
     event.respondWith(
-      caches.open(DATA_CACHE_NAME)
-        .then((cache) => {
-          return cache.match(request)
-            .then((response) => {
-              if (response) {
-                // Return cached data immediately for better UX
-                console.log('📱 Service Worker: Serving from cache', request.url);
-                
-                // Update cache in background
-                fetch(request).then((networkResponse) => {
-                  if (networkResponse && networkResponse.status === 200) {
-                    cache.put(request, networkResponse.clone());
-                  }
-                }).catch(() => {
-                  // Network failed, cached data is still valid
-                });
-                
-                return response;
+      caches.open(DATA_CACHE_NAME).then((cache) => {
+        return cache.match(request).then((cachedResponse) => {
+          if (cachedResponse) {
+            // Return cached response immediately
+            fetch(request).then((fetchResponse) => {
+              if (fetchResponse.ok) {
+                cache.put(request, fetchResponse.clone());
               }
-              
-              // Fetch from network and cache
-              return fetch(request).then((networkResponse) => {
-                if (networkResponse && networkResponse.status === 200) {
-                  cache.put(request, networkResponse.clone());
-                }
-                return networkResponse;
-              });
+            }).catch(() => {
+              // Network failed, cached response is all we have
             });
-        })
-        .catch(() => {
-          // Return offline page for failed API calls
-          if (request.url.includes('/api/')) {
-            return new Response(
-              JSON.stringify({ 
-                error: 'Offline mode', 
-                message: 'Please check your internet connection' 
-              }),
-              { 
-                headers: { 'Content-Type': 'application/json' },
-                status: 503
-              }
-            );
+            return cachedResponse;
           }
-        })
-    );
-    return;
-  }
-  
-  // Handle app shell with cache-first strategy
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      caches.match('/')
-        .then((response) => {
-          return response || fetch(request);
-        })
-        .catch(() => {
-          return caches.match('/');
-        })
-    );
-    return;
-  }
-  
-  // Handle static assets with cache-first strategy
-  event.respondWith(
-    caches.match(request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request for fetch
-        const fetchRequest = request.clone();
-        
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response for caching
-          const responseToCache = response.clone();
-          
-          // Cache the response
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          
-          return response;
+
+          // No cached response, fetch from network
+          return fetch(request).then((fetchResponse) => {
+            if (fetchResponse.ok) {
+              cache.put(request, fetchResponse.clone());
+            }
+            return fetchResponse;
+          });
         });
       })
-  );
-});
-
-// ✅ BACKGROUND SYNC for prayer time notifications
-self.addEventListener('sync', (event) => {
-  console.log('🔄 Service Worker: Background sync triggered', event.tag);
-  
-  if (event.tag === 'prayer-notification') {
-    event.waitUntil(
-      sendPrayerNotification()
     );
+    return;
+  }
+
+  // Handle navigation requests
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => {
+        return caches.match('/offline.html');
+      })
+    );
+    return;
+  }
+
+  // Handle static assets
+  if (request.destination === 'script' || 
+      request.destination === 'style' || 
+      request.destination === 'image' ||
+      request.destination === 'font') {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        
+        return fetch(request).then((fetchResponse) => {
+          if (fetchResponse.ok) {
+            const cache = caches.open(CACHE_NAME);
+            cache.then(c => c.put(request, fetchResponse.clone()));
+          }
+          return fetchResponse;
+        });
+      })
+    );
+    return;
   }
 });
 
-// ✅ PUSH NOTIFICATIONS for prayer times
-self.addEventListener('push', (event) => {
-  console.log('📬 Service Worker: Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Prayer time reminder',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'view',
-        title: 'View Prayer Times',
-        icon: '/icon-192.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: '/icon-192.png'
-      }
-    ]
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification('An-Nur Compass', options)
-  );
-});
-
-// ✅ NOTIFICATION CLICK HANDLER
-self.addEventListener('notificationclick', (event) => {
-  console.log('🔔 Service Worker: Notification click received');
-  
-  event.notification.close();
-  
-  if (event.action === 'view') {
-    event.waitUntil(
-      clients.openWindow('/prayer-times')
-    );
-  } else {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
-
-// ✅ MESSAGE HANDLER for app communication
+// ✅ UPDATE MANAGEMENT
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   
   if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: CACHE_NAME });
+    event.ports[0].postMessage({
+      type: 'VERSION',
+      version: CACHE_NAME
+    });
+  }
+});
+
+// ✅ BACKGROUND SYNC for Prayer Notifications
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'prayer-notification') {
+    event.waitUntil(sendPrayerNotification());
+  }
+});
+
+// ✅ PUSH NOTIFICATIONS
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'Prayer time notification',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    vibrate: [200, 100, 200],
+    tag: 'prayer-notification',
+    requireInteraction: true,
+    actions: [
+      {
+        action: 'view',
+        title: 'View Prayer Times',
+        icon: '/icons/icon-192.png'
+      },
+      {
+        action: 'dismiss',
+        title: 'Dismiss',
+        icon: '/icons/icon-192.png'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('An-Nur Compass', options)
+  );
+});
+
+// ✅ NOTIFICATION CLICK HANDLING
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'view') {
+    event.waitUntil(
+      clients.openWindow('/prayer-times')
+    );
+  } else if (event.action === 'dismiss') {
+    // Just close the notification
+    return;
+  } else {
+    // Default action - open app
+    event.waitUntil(
+      clients.openWindow('/')
+    );
   }
 });
 
 // ✅ HELPER FUNCTIONS
-
 async function sendPrayerNotification() {
   try {
-    // Calculate next prayer time
-    const now = new Date();
-    const prayerTimes = await calculatePrayerTimes();
-    const nextPrayer = getNextPrayer(prayerTimes, now);
+    // This would integrate with your prayer times service
+    const nextPrayer = await getNextPrayer();
     
-    if (nextPrayer && nextPrayer.timeUntil <= 5) { // 5 minutes before
-      const notification = {
-        title: 'An-Nur Compass',
-        body: `استعد للصلاة، صلاة ${nextPrayer.name} ستبدأ بعد ${nextPrayer.timeUntil} دقائق`,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: 'prayer-reminder',
-        vibrate: [200, 100, 200],
-        data: { prayer: nextPrayer.name }
-      };
-      
-      return self.registration.showNotification(notification.title, notification);
+    if (nextPrayer && nextPrayer.timeRemaining < 5 * 60 * 1000) { // 5 minutes
+      await self.registration.showNotification('Prayer Time Approaching', {
+        body: `${nextPrayer.name} prayer in ${Math.round(nextPrayer.timeRemaining / 60000)} minutes`,
+        icon: '/icons/icon-192.png',
+        tag: 'prayer-upcoming'
+      });
     }
   } catch (error) {
-    console.error('❌ Service Worker: Prayer notification failed', error);
+    console.error('Failed to send prayer notification:', error);
   }
 }
 
 async function calculatePrayerTimes() {
-  // Simple prayer time calculation - in production, use proper Adhan library
+  // This would integrate with your actual prayer times calculation
+  // For now, return hardcoded values
   return {
     fajr: '05:30',
-    sunrise: '06:45', 
+    sunrise: '06:45',
     dhuhr: '12:30',
     asr: '15:45',
-    maghrib: '18:30',
-    isha: '20:00'
+    maghrib: '18:15',
+    isha: '19:30'
   };
 }
 
-function getNextPrayer(prayerTimes, currentTime) {
-  // Implementation would determine next prayer and time remaining
-  return null; // Simplified for now
+async function getNextPrayer() {
+  // Placeholder function to determine next prayer
+  // This would integrate with your prayer times service
+  return {
+    name: 'Maghrib',
+    timeRemaining: 10 * 60 * 1000 // 10 minutes in milliseconds
+  };
 }
 
-console.log('🕌 An-Nur Compass Service Worker loaded successfully');
+console.log('✅ An-Nur Compass Service Worker loaded');
