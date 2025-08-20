@@ -10,6 +10,7 @@ import PrayerTimes from "./pages/PrayerTimes";
 import Qibla from "./pages/Qibla";
 import Azkar from "./pages/Azkar";
 import Mosques from "./pages/Mosques";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
