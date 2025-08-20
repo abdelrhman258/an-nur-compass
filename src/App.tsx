@@ -28,6 +28,7 @@ const App = () => (
             <Route path="/qibla" element={<Qibla />} />
             <Route path="/azkar" element={<Azkar />} />
             <Route path="/mosques" element={<Mosques />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
