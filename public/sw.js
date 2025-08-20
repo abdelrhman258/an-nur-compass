@@ -1,5 +1,8 @@
 // ✅ PRODUCTION SERVICE WORKER FOR AN-NUR COMPASS
-// Offline caching, update management, and PWA features
+// Workbox injection point for vite-plugin-pwa
+import {precacheAndRoute} from 'workbox-precaching';
+
+precacheAndRoute(self.__WB_MANIFEST);
 
 const CACHE_NAME = 'an-nur-compass-v1';
 const DATA_CACHE_NAME = 'an-nur-data-v1';

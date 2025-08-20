@@ -38,6 +38,9 @@ const Quran = () => {
         }
       } catch (error) {
         console.error('Error loading Surahs:', error);
+        toast.error('Failed to load Quran. Please check your internet connection.', {
+          description: 'The app will work offline with previously cached content.'
+        });
       } finally {
         setLoading(false);
       }
@@ -82,7 +85,9 @@ const Quran = () => {
       if (error.message.includes('verification failed')) {
         toast.error('Quran text unavailable — verification failed');
       } else {
-        toast.error('فشل في تحميل السورة');
+        toast.error('Failed to load Surah. Check your internet connection.', {
+          description: 'Cached content may be available offline.'
+        });
       }
       setSelectedSurah(null); // Reset selection on error
     } finally {
